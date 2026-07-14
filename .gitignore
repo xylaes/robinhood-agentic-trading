@@ -1,0 +1,22 @@
+# Virtual environment
+.venv/
+env/
+venv/
+ENV/
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Trading Logs & State (Private data!)
+trading_state.json
+trading_log.json
+trading_bot.log
+agent_input.json
+
+# Local Auth Cache
+.mcp-auth/
+
+# Environment Variables
+.env
+.env*

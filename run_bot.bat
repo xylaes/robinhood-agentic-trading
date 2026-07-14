@@ -1,0 +1,3 @@
+@echo off
+echo Running Robinhood Agentic Trading Bot...
+.venv\Scripts\python.exe trading_bot.py %*
