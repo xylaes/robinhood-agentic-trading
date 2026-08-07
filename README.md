@@ -9,21 +9,6 @@ An institutional-grade, multi-asset autonomous AI portfolio management system bu
 
 ---
 
-## ⚠️ Financial, Legal & Trademark Disclaimers (Use at Your Own Risk)
-
-> **DISCLAIMER**: This repository, software, and documentation are provided strictly for **educational, personal project, portfolio showcase, and research purposes only**.
->
-> * **Non-Affiliation & Trademark Disclaimer**: This project is an independent personal software project developed by individual user(s) and is **not affiliated, associated, authorized, endorsed by, or in any way officially connected with Robinhood Markets, Inc.**, **Google LLC**, or any of their subsidiaries or affiliates.
->   - Official Robinhood website: [https://robinhood.com](https://robinhood.com)
->   - Official Google website: [https://google.com](https://google.com)
->   - The names "Robinhood" and "Google" (including "Google Antigravity" / "AGY"), as well as related names, marks, emblems, and logos, are registered trademarks of their respective owners.
-> * **No Financial Advice**: Nothing contained in this codebase, documentation, or generated reports constitutes financial, investment, legal, or tax advice.
-> * **High-Risk Investment Warning**: All trading across equities, options, and cryptocurrencies involves significant risk of monetary loss. Extended-hours trading (24/5 Blue Ocean sessions) and cryptocurrency markets carry heightened volatility and liquidity risks.
-> * **Provided "AS IS" Without Warranty**: As set forth in the MIT License, this software is provided "AS IS", without warranty of any kind, express or implied. The authors and contributors assume **zero responsibility or legal liability** for any financial losses, execution errors, broker outages, API failures, or damages resulting from the use or misuse of this software.
-> * **User Responsibility**: Users are solely responsible for validating order parameters, conducting independent research, and complying with all applicable FINRA, SEC, and local financial regulations.
-
----
-
 ## 🚀 Tech-Forward Robinhood Innovations Leveraged
 
 This system takes full advantage of Robinhood’s industry-leading fintech innovations:
@@ -161,3 +146,18 @@ python portfolio_manager.py
 * 📄 **[LICENSE](file:///c:/Users/danny/OneDrive/Desktop/my-first-project/LICENSE)**: Standard MIT Open Source License.
 * 📦 **[requirements.txt](file:///c:/Users/danny/OneDrive/Desktop/my-first-project/requirements.txt)**: Minimal required Python dependencies.
 * ⚙️ **[.gitignore](file:///c:/Users/danny/OneDrive/Desktop/my-first-project/.gitignore)**: Comprehensive ignore rules excluding temporary files and PII.
+
+---
+
+## ⚠️ Financial, Legal & Trademark Disclaimers (Use at Your Own Risk)
+
+> **DISCLAIMER**: This repository, software, and documentation are provided strictly for **educational, personal project, portfolio showcase, and research purposes only**.
+>
+> * **Non-Affiliation & Trademark Disclaimer**: This project is an independent personal software project developed by individual user(s) and is **not affiliated, associated, authorized, endorsed by, or in any way officially connected with Robinhood Markets, Inc.**, **Google LLC**, or any of their subsidiaries or affiliates.
+>   - Official Robinhood website: [https://robinhood.com](https://robinhood.com)
+>   - Official Google website: [https://google.com](https://google.com)
+>   - The names "Robinhood" and "Google" (including "Google Antigravity" / "AGY"), as well as related names, marks, emblems, and logos, are registered trademarks of their respective owners.
+> * **No Financial Advice**: Nothing contained in this codebase, documentation, or generated reports constitutes financial, investment, legal, or tax advice.
+> * **High-Risk Investment Warning**: All trading across equities, options, and cryptocurrencies involves significant risk of monetary loss. Extended-hours trading (24/5 Blue Ocean sessions) and cryptocurrency markets carry heightened volatility and liquidity risks.
+> * **Provided "AS IS" Without Warranty**: As set forth in the MIT License, this software is provided "AS IS", without warranty of any kind, express or implied. The authors and contributors assume **zero responsibility or legal liability** for any financial losses, execution errors, broker outages, API failures, or damages resulting from the use or misuse of this software.
+> * **User Responsibility**: Users are solely responsible for validating order parameters, conducting independent research, and complying with all applicable FINRA, SEC, and local financial regulations.
