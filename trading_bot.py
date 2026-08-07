@@ -557,7 +557,7 @@ async def run_bot_once(dry_run, account_number):
     command = "npx.cmd" if sys.platform == "win32" else "npx"
     server_params = StdioServerParameters(
         command=command,
-        args=["-y", "mcp-remote", "https://agent.robinhood.com/mcp/trading"]
+        args=["-y", "mcp-remote@0.1.38", "https://agent.robinhood.com/mcp/trading"]
     )
     
     bot = TradingBot(account_number=account_number, dry_run=dry_run)
