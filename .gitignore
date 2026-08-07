@@ -1,0 +1,33 @@
+# Environment & Secrets
+.env
+.env*
+!.env.example
+.venv/
+node_modules/
+.agents/
+.gemini/
+__pycache__/
+*.pyc
+
+# Local Logs & Generated Data Files
+*.log
+*.json
+
+# Scratch Python Scripts (Keep Core Entrypoints Only)
+*.py
+!portfolio_manager.py
+!test_connection.py
+
+# Miscellaneous Local Scratch Assets & Subdirectories
+*.sql
+*.bat
+*.ps1
+*.md
+!README.md
+!STRATEGY.md
+!USAGE_GUIDE.md
+!WALKTHROUGH.md
+!agent_journal.md
+
+# Ignore any untracked local subdirectories
+*/
