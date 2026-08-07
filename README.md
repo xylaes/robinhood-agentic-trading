@@ -9,6 +9,17 @@ An institutional-grade, multi-asset autonomous AI portfolio management system bu
 
 ---
 
+## ⚠️ Financial & Legal Disclaimer (Use at Your Own Risk)
+
+> **DISCLAIMER**: This repository, software, and documentation are provided strictly for **educational, portfolio showcase, and research purposes only**.
+>
+> * **No Financial Advice**: Nothing contained in this codebase, documentation, or generated reports constitutes financial, investment, legal, or tax advice.
+> * **High-Risk Investment Warning**: All trading across equities, options, and cryptocurrencies involves significant risk of monetary loss. Extended-hours trading (24/5 Blue Ocean sessions) and cryptocurrency markets carry heightened volatility and liquidity risks.
+> * **Provided "AS IS" Without Warranty**: As set forth in the MIT License, this software is provided "AS IS", without warranty of any kind, express or implied. The authors and contributors assume **zero responsibility or legal liability** for any financial losses, execution errors, broker outages, API failures, or damages resulting from the use or misuse of this software.
+> * **User Responsibility**: Users are solely responsible for validating order parameters, conducting independent research, and complying with all applicable FINRA, SEC, and local financial regulations.
+
+---
+
 ## 🚀 Tech-Forward Robinhood Innovations Leveraged
 
 This system takes full advantage of Robinhood’s industry-leading fintech innovations:
