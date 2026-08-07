@@ -42,11 +42,11 @@ Rather than making emotional human trades or relying on simple rule-based script
 
 ## 💡 Beginner-Friendly Trading Strategies
 
-For a full quantitative breakdown, see [**`STRATEGY.md`**](file:///c:/Users/danny/OneDrive/Desktop/my-first-project/STRATEGY.md).
+For a full quantitative strategy breakdown, see [**`STRATEGY.md`**](file:///c:/Users/danny/OneDrive/Desktop/my-first-project/STRATEGY.md).
 
 * 📊 **Equities Bucket (~$50.00) — Buying Quality Stocks "On Sale"**: Uses 1-hour RSI, MACD, and Bollinger Bands to identify when strong stocks (`NVDA`, `SPY`, `QQQ`, `AAPL`) are temporarily dip-buying opportunities, locking in gains (+4.0% Take Profit) and capping losses (-2.0% Stop Loss).
 * 🎯 **Options Bucket ($50.00) — "Discount Coupons" with High Odds**: Single-leg **High-Delta In-The-Money Calls** (Delta 0.75 – 0.85+, **80%+ Win Probability**, $15 – $40 premium cap) controlling 100 shares for high-probability gains.
-* 🪙 **Crypto Bucket ($50.00) — 24/7 Off-Hours Momentum**: Continuous 24/7 monitoring of `BTC-USD`, `ETH-USD`, `SOL-USD`, and `DOGE-USD` on the "Agentic Crypto" watchlist when traditional stock exchanges are closed.
+* 🪙 **Crypto Bucket ($50.00) — 24/7 Off-Hours Momentum & Dip-Buying**: Continuous 24/7 monitoring of `BTC-USD`, `ETH-USD`, `SOL-USD`, and `DOGE-USD` on the "Agentic Crypto" watchlist when traditional stock markets are closed. Buys $10–$25 oversold dips (RSI < 38) and locks in **+5.0% to +8.0% profits** (-3.0% Stop Loss).
 
 ---
 

@@ -24,10 +24,10 @@ Capital is systematically partitioned across three distinct strategy buckets:
 
 ---
 
-## 💡 Beginner-Friendly Strategy Guides
+## 💡 Strategy Guides & Quantitative Execution Rules
 
 ### 1. 📊 Equities Bucket (~$50.00 Allocation) — Buying Quality Stocks "On Sale"
-* **Beginner Explanation**: Think of quality stocks (like NVIDIA or the S&P 500 ETF) like items at a store. Sometimes their prices dip temporarily below their true value. We use mathematical meters (**RSI** and **Bollinger Bands**) to find when a stock is temporarily "on sale" (oversold), buy a small fractional position, and automatically lock in profits (+4%) when it bounces back.
+* **Beginner Explanation**: Think of quality stocks (like NVIDIA or the S&P 500 ETF) like items at a store. Sometimes their prices dip temporarily below their true value. We use mathematical meters (**RSI** and **Bollinger Bands**) to find when a stock is temporarily "on sale" (oversold), buy a small fractional position, and automatically lock in profits (+4.0%) when it bounces back.
 * **Quantitative Rules**:
   - **RSI (14-period)**: BUY when RSI < 35 (Oversold); SELL when RSI > 70 (Overbought).
   - **MACD (12, 26, 9)**: Bullish crossover (`MACD > Signal`) triggers accumulation.
@@ -49,12 +49,19 @@ Capital is systematically partitioned across three distinct strategy buckets:
 
 ---
 
-### 3. 🪙 Crypto Bucket ($50.00 Allocation) — 24/7 Off-Hours Momentum
-* **Beginner Explanation**: Traditional stock markets close at 4:00 PM EST and stay shut on weekends. **Crypto markets never close** — they trade 24 hours a day, 7 days a week. The AI agent monitors top-tier digital assets (`BTC`, `ETH`, `SOL`, `DOGE`) around the clock to capture momentum when traditional stock exchanges are offline.
-* **Quantitative Rules**:
-  - **Watchlist**: Dedicated Robinhood Watchlist **"Agentic Crypto" 🪙** (`235bdcfb-652c-49f8-8733-adce9afafcdf`).
-  - **Tracked Assets**: `BTC-USD` (Bitcoin), `ETH-USD` (Ethereum), `SOL-USD` (Solana), `DOGE-USD` (Dogecoin).
-  - **Execution**: Continuous quote monitoring and watchlist synchronization via Robinhood MCP.
+### 3. 🪙 Crypto Bucket ($50.00 Allocation) — 24/7 Off-Hours Momentum & Dip-Buying
+* **Beginner Explanation**: Traditional stock markets close at 4:00 PM EST and stay shut on weekends. **Crypto markets never close** — they trade 24 hours a day, 7 days a week. When stock markets are closed on evenings and weekends, big price moves happen in crypto. We watch the top 4 digital assets (`BTC`, `ETH`, `SOL`, `DOGE`) around the clock. When a coin dips into oversold territory, the AI buys a $10–$25 slice and automatically sells when it bounces +5% for a fast profit.
+* **Asset Categorization**:
+  - **Core Trend Leaders**: `BTC-USD` (Bitcoin) & `ETH-USD` (Ethereum) — 70% of crypto capital.
+  - **High-Beta Momentum**: `SOL-USD` (Solana) & `DOGE-USD` (Dogecoin) — 30% of crypto capital.
+* **Quantitative Execution Rules**:
+  - **Indicator Signals**:
+    * **RSI Dip Buy**: BUY when 4-hour RSI < 38 (Oversold pullback).
+    * **MACD Crossover**: BUY when 1-hour MACD line crosses above Signal line during off-hours/weekend sessions.
+    * **Bollinger Breakout**: BUY on price crossing above 20-period Middle Band.
+  - **Order Sizing**: **$10.00 – $25.00** dollar-based fractional orders.
+  - **Take Profit**: **+5.00% to +8.00%** profit target (capturing crypto volatility).
+  - **Stop Loss**: **-3.00%** loss limit (protecting against sharp crypto drawdowns).
 
 ---
 
