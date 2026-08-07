@@ -17,6 +17,7 @@ __pycache__/
 *.py
 !portfolio_manager.py
 !test_connection.py
+!test_*.py
 
 # Miscellaneous Local Scratch Assets & Subdirectories
 *.sql
