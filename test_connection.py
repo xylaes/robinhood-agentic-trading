@@ -16,7 +16,7 @@ async def test_mcp_connection():
     command = "npx.cmd" if sys.platform == "win32" else "npx"
     server_params = StdioServerParameters(
         command=command,
-        args=["-y", "mcp-remote", "https://agent.robinhood.com/mcp/trading"]
+        args=["-y", "mcp-remote@0.1.38", "https://agent.robinhood.com/mcp/trading"]
     )
 
     print("Checking connection to Robinhood MCP gateway...")
