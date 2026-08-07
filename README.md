@@ -9,14 +9,14 @@ An institutional-grade, multi-asset autonomous AI portfolio management system bu
 
 ---
 
-## 🎬 Interactive System Demo Walkthrough
+## 🏛️ System Architecture Diagram
 
-Explore the complete step-by-step system walkthrough & Mermaid architecture flow in [**`WALKTHROUGH.md`**](file:///c:/Users/danny/OneDrive/Desktop/my-first-project/WALKTHROUGH.md).
+Explore the complete step-by-step system walkthrough & detailed guide in [**`WALKTHROUGH.md`**](file:///c:/Users/danny/OneDrive/Desktop/my-first-project/WALKTHROUGH.md).
 
 ```mermaid
 graph TD
     AGY["Google Antigravity (AGY) Engine"] -->|Model Context Protocol IPC| MCP["Robinhood MCP Trading Gateway"]
-    MCP -->|Account & Portfolio Sync| Portfolio["Live Portfolio Sync ($149.67 Net Worth)"]
+    MCP -->|Account & Portfolio Sync| Portfolio["Live Portfolio Sync (Net Worth & Balances)"]
     MCP -->|Server Technical Indicators| Analytics["1h RSI, MACD, Bollinger Bands"]
     MCP -->|Compliance Pre-Trade Review| Simulation["Pre-Trade Order Review (review_equity_order / review_option_order)"]
     
@@ -40,19 +40,19 @@ Rather than making emotional human trades or relying on simple rule-based script
 
 ---
 
-## 💼 Resume & Portfolio Summary (For Recruiters & Executives)
+## 💡 Beginner-Friendly Trading Strategies
 
-> *"Engineered an autonomous AI multi-asset portfolio manager using Google Antigravity (AGY) and the Robinhood MCP Trading Gateway. Architected a 3-bucket quantitative allocation model (Equities, Level 2 Options, 24/7 Crypto) enforcing FINRA Rule 4210 (PDT), SEC Reg T (GFV), and IRS Code § 1091 (Wash Sale) regulatory safeguards with 100% pre-trade order simulation reviews and zero PII exposure."*
+For a full quantitative breakdown, see [**`STRATEGY.md`**](file:///c:/Users/danny/OneDrive/Desktop/my-first-project/STRATEGY.md).
+
+* 📊 **Equities Bucket (~$50.00) — Buying Quality Stocks "On Sale"**: Uses 1-hour RSI, MACD, and Bollinger Bands to identify when strong stocks (`NVDA`, `SPY`, `QQQ`, `AAPL`) are temporarily dip-buying opportunities, locking in gains (+4.0% Take Profit) and capping losses (-2.0% Stop Loss).
+* 🎯 **Options Bucket ($50.00) — "Discount Coupons" with High Odds**: Single-leg **High-Delta In-The-Money Calls** (Delta 0.75 – 0.85+, **80%+ Win Probability**, $15 – $40 premium cap) controlling 100 shares for high-probability gains.
+* 🪙 **Crypto Bucket ($50.00) — 24/7 Off-Hours Momentum**: Continuous 24/7 monitoring of `BTC-USD`, `ETH-USD`, `SOL-USD`, and `DOGE-USD` on the "Agentic Crypto" watchlist when traditional stock exchanges are closed.
 
 ---
 
-## 🎯 Capital Allocation & Trading Strategies
+## 💼 Resume & Portfolio Summary (For Recruiters & Executives)
 
-For a deep quantitative strategy breakdown, see [**`STRATEGY.md`**](file:///c:/Users/danny/OneDrive/Desktop/my-first-project/STRATEGY.md).
-
-* 📊 **Equities Bucket (~$50.00)**: Momentum & mean-reversion trading on `NVDA`, `SPY`, `QQQ`, and `AAPL` using 1-hour RSI, MACD, and Bollinger Bands (+4.0% Take Profit, -2.0% Stop Loss).
-* 🎯 **Options Bucket ($50.00)**: High-probability **In-The-Money (ITM) Call Options** (Delta 0.75 – 0.85+, **80%+ Win Probability**, $15 – $40 premium cap).
-* 🪙 **Crypto Bucket ($50.00)**: 24/7 off-hours momentum tracking for `BTC-USD`, `ETH-USD`, `SOL-USD`, and `DOGE-USD` on the "Agentic Crypto" watchlist.
+> *"Engineered an autonomous AI multi-asset portfolio manager using Google Antigravity (AGY) and the Robinhood MCP Trading Gateway. Architected a 3-bucket quantitative allocation model (Equities, Level 2 Options, 24/7 Crypto) enforcing FINRA Rule 4210 (PDT), SEC Reg T (GFV), and IRS Code § 1091 (Wash Sale) regulatory safeguards with 100% pre-trade order simulation reviews and zero PII exposure."*
 
 ---
 
@@ -123,14 +123,14 @@ python portfolio_manager.py
 
 ## 📂 Repository Structure
 
-* 🎬 **[WALKTHROUGH.md](file:///c:/Users/danny/OneDrive/Desktop/my-first-project/WALKTHROUGH.md)**: Interactive step-by-step system demo & Mermaid flow diagram.
-* 📄 **[portfolio_manager.py](file:///c:/Users/danny/OneDrive/Desktop/my-first-project/portfolio_manager.py)**: Single, unified entry point script for portfolio synchronization, indicator checks, pre-trade simulations, and state logging.
-* 🧠 **[STRATEGY.md](file:///c:/Users/danny/OneDrive/Desktop/my-first-project/STRATEGY.md)**: Detailed trading strategy rules for Equities, Options, and Crypto buckets.
+* 🎬 **[WALKTHROUGH.md](file:///c:/Users/danny/OneDrive/Desktop/my-first-project/WALKTHROUGH.md)**: System Architecture Diagram & step-by-step beginner guide.
+* 🧠 **[STRATEGY.md](file:///c:/Users/danny/OneDrive/Desktop/my-first-project/STRATEGY.md)**: Detailed trading strategy rules for Equities, Options, and Crypto.
 * 📖 **[USAGE_GUIDE.md](file:///c:/Users/danny/OneDrive/Desktop/my-first-project/USAGE_GUIDE.md)**: Non-technical showcase guide & schedule frequency rules.
-* 📊 **[portfolio_dashboard.html](file:///c:/Users/danny/OneDrive/Desktop/my-first-project/portfolio_dashboard.html)**: Interactive visual dashboard for portfolio metrics.
+* 📄 **[portfolio_manager.py](file:///c:/Users/danny/OneDrive/Desktop/my-first-project/portfolio_manager.py)**: Single, unified entry point script.
+* 📊 **[portfolio_dashboard.html](file:///c:/Users/danny/OneDrive/Desktop/my-first-project/portfolio_dashboard.html)**: Interactive visual dashboard.
 * 🧪 **[test_connection.py](file:///c:/Users/danny/OneDrive/Desktop/my-first-project/test_connection.py)**: 5-second diagnostic connection test script.
-* 📝 **[agent_journal.md](file:///c:/Users/danny/OneDrive/Desktop/my-first-project/agent_journal.md)**: Main chronological journal tracking portfolio runs, technical analysis, and executed orders.
+* 📝 **[agent_journal.md](file:///c:/Users/danny/OneDrive/Desktop/my-first-project/agent_journal.md)**: Main chronological journal.
 * 📋 **[.env.example](file:///c:/Users/danny/OneDrive/Desktop/my-first-project/.env.example)**: Environment variable template file.
 * 📄 **[LICENSE](file:///c:/Users/danny/OneDrive/Desktop/my-first-project/LICENSE)**: Standard MIT Open Source License.
-* 📦 **[requirements.txt](file:///c:/Users/danny/OneDrive/Desktop/my-first-project/requirements.txt)**: Minimal required Python dependencies (`mcp`, `python-dotenv`, `pandas`, `numpy`).
-* ⚙️ **[.gitignore](file:///c:/Users/danny/OneDrive/Desktop/my-first-project/.gitignore)**: Comprehensive ignore rules excluding temporary scratch files, logs, raw data dumps, and PII.
+* 📦 **[requirements.txt](file:///c:/Users/danny/OneDrive/Desktop/my-first-project/requirements.txt)**: Minimal required Python dependencies.
+* ⚙️ **[.gitignore](file:///c:/Users/danny/OneDrive/Desktop/my-first-project/.gitignore)**: Comprehensive ignore rules excluding temporary files and PII.
