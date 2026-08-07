@@ -9,6 +9,17 @@ An institutional-grade, multi-asset autonomous AI portfolio management system bu
 
 ---
 
+## 🚀 Tech-Forward Robinhood Innovations Leveraged
+
+This system takes full advantage of Robinhood’s industry-leading fintech innovations:
+
+1. 🌙 **24-Hour Market (24/5 Equities & ETF Trading)**: Executes extended hours limit orders (`market_hours="extended_hours"`) via Blue Ocean ATS from Sunday 8:00 PM EST to Friday 8:00 PM EST to capitalize on earnings reports and Asian market opens.
+2. 🎯 **Event Contracts & Prediction Markets (via Kalshi)**: Uses binary $0.01 – $0.99 macro contracts (Fed interest rates, CPI inflation data) to hedge equity positions, tracked via `get_pnl_trade_history`.
+3. 🛡️ **Agentic Sub-Accounts & Budget Sandboxing**: Operates safely inside a dedicated sub-account (`618678015`) with push notifications and budget sandboxing, keeping primary wealth 100% air-gapped.
+4. 💵 **High-Yield Uninvested Cash Sweep**: Uninvested settled cash automatically earns top-tier APY interest in FDIC-insured partner banks while waiting for technical dip-buy signals.
+
+---
+
 ## 🏛️ System Architecture Diagram
 
 Explore the complete step-by-step system walkthrough & detailed guide in [**`WALKTHROUGH.md`**](file:///c:/Users/danny/OneDrive/Desktop/my-first-project/WALKTHROUGH.md).
@@ -36,7 +47,7 @@ graph TD
 
 The **Robinhood Agentic Trading Portfolio Manager** is an autonomous AI investment system designed to demonstrate how cutting-edge LLM agents can safely interact with live financial brokerage APIs via the **Model Context Protocol (MCP)**.
 
-Rather than making emotional human trades or relying on simple rule-based scripts, the system operates as an **algorithmic 3-bucket portfolio manager** — combining institutional technical indicators (RSI, MACD, Bollinger Bands), strict SEC/FINRA regulatory safeguards, and pre-trade simulation reviews to manage capital across **Equities**, **Options**, and **Crypto**.
+Rather than making emotional human trades or relying on simple rule-based scripts, the system operates as an **algorithmic 4-bucket portfolio manager** — combining institutional technical indicators (RSI, MACD, Bollinger Bands), strict SEC/FINRA regulatory safeguards, and pre-trade simulation reviews to manage capital across **Equities**, **Options**, **Crypto**, and **Event Markets**.
 
 ---
 
@@ -44,15 +55,16 @@ Rather than making emotional human trades or relying on simple rule-based script
 
 For a full quantitative strategy breakdown, see [**`STRATEGY.md`**](file:///c:/Users/danny/OneDrive/Desktop/my-first-project/STRATEGY.md).
 
-* 📊 **Equities Bucket (~$50.00) — Buying Quality Stocks "On Sale"**: Uses 1-hour RSI, MACD, and Bollinger Bands to identify when strong stocks (`NVDA`, `SPY`, `QQQ`, `AAPL`) are temporarily dip-buying opportunities, locking in gains (+4.0% Take Profit) and capping losses (-2.0% Stop Loss).
+* 📊 **Equities Bucket (~$50.00) — Buying Quality Stocks "On Sale" & 24/5 Trading**: Uses 1-hour RSI, MACD, and Bollinger Bands to identify when strong stocks (`NVDA`, `SPY`, `QQQ`, `AAPL`) are dip-buying opportunities during regular and 24/5 extended hours (+4.0% Take Profit, -2.0% Stop Loss).
 * 🎯 **Options Bucket ($50.00) — "Discount Coupons" with High Odds**: Single-leg **High-Delta In-The-Money Calls** (Delta 0.75 – 0.85+, **80%+ Win Probability**, $15 – $40 premium cap) controlling 100 shares for high-probability gains.
-* 🪙 **Crypto Bucket ($50.00) — 24/7 Off-Hours Momentum & Dip-Buying**: Continuous 24/7 monitoring of `BTC-USD`, `ETH-USD`, `SOL-USD`, and `DOGE-USD` on the "Agentic Crypto" watchlist when traditional stock markets are closed. Buys $10–$25 oversold dips (RSI < 38) and locks in **+5.0% to +8.0% profits** (-3.0% Stop Loss).
+* 🪙 **Crypto Bucket ($50.00) — 24/7 Off-Hours Momentum & Dip-Buying**: Continuous 24/7 monitoring of `BTC-USD`, `ETH-USD`, `SOL-USD`, and `DOGE-USD` on the "Agentic Crypto" watchlist. Buys $10–$25 oversold dips (RSI < 38) and locks in **+5.0% to +8.0% profits** (-3.0% Stop Loss).
+* 🎯 **Event Contracts & Cash Sweep Reserve**: Macro risk hedging via binary event contracts and automatic high-yield APY interest on uninvested settled cash.
 
 ---
 
 ## 💼 Resume & Portfolio Summary (For Recruiters & Executives)
 
-> *"Engineered an autonomous AI multi-asset portfolio manager using Google Antigravity (AGY) and the Robinhood MCP Trading Gateway. Architected a 3-bucket quantitative allocation model (Equities, Level 2 Options, 24/7 Crypto) enforcing FINRA Rule 4210 (PDT), SEC Reg T (GFV), and IRS Code § 1091 (Wash Sale) regulatory safeguards with 100% pre-trade order simulation reviews and zero PII exposure."*
+> *"Engineered an autonomous AI multi-asset portfolio manager using Google Antigravity (AGY) and the Robinhood MCP Trading Gateway. Architected a 4-bucket quantitative allocation model (Equities, Level 2 Options, 24/7 Crypto, Event Contracts) leveraging 24/5 Blue Ocean ATS trading, high-yield cash sweeps, and FINRA Rule 4210 (PDT), SEC Reg T (GFV), and IRS Code § 1091 (Wash Sale) safeguards with zero PII exposure."*
 
 ---
 
@@ -62,7 +74,7 @@ For operational setup instructions, see [**`USAGE_GUIDE.md`**](file:///c:/Users/
 
 | Asset Class / Bucket | Recommended Schedule Frequency | Active Session Hours | Objective |
 | :--- | :--- | :--- | :--- |
-| **Equities & ETFs** | **Hourly** (`0 * * * *`) | Mon–Fri, 9:30 AM – 4:00 PM EST | Monitor RSI oversold setups & take-profit / stop-loss boundaries |
+| **Equities & 24/5 ETFs** | **Hourly** (`0 * * * *`) | Mon–Fri 24/5 (Blue Ocean ATS Session) | Monitor RSI oversold setups & take-profit / stop-loss boundaries |
 | **Level 2 Options** | **Hourly or Pre-Market** | Mon–Fri, 9:30 AM – 4:00 PM EST | Scan High-Delta ITM Calls & manage option expirations |
 | **24/7 Crypto** | **Every 4 Hours** (`0 */4 * * *`) | 24 Hours / 7 Days a Week | Track Bitcoin, Ethereum, Solana, and Dogecoin momentum |
 
@@ -124,7 +136,7 @@ python portfolio_manager.py
 ## 📂 Repository Structure
 
 * 🎬 **[WALKTHROUGH.md](file:///c:/Users/danny/OneDrive/Desktop/my-first-project/WALKTHROUGH.md)**: System Architecture Diagram & step-by-step beginner guide.
-* 🧠 **[STRATEGY.md](file:///c:/Users/danny/OneDrive/Desktop/my-first-project/STRATEGY.md)**: Detailed trading strategy rules for Equities, Options, and Crypto.
+* 🧠 **[STRATEGY.md](file:///c:/Users/danny/OneDrive/Desktop/my-first-project/STRATEGY.md)**: Detailed trading strategy rules for Equities, Options, Crypto, and Event Markets.
 * 📖 **[USAGE_GUIDE.md](file:///c:/Users/danny/OneDrive/Desktop/my-first-project/USAGE_GUIDE.md)**: Non-technical showcase guide & schedule frequency rules.
 * 📄 **[portfolio_manager.py](file:///c:/Users/danny/OneDrive/Desktop/my-first-project/portfolio_manager.py)**: Single, unified entry point script.
 * 📊 **[portfolio_dashboard.html](file:///c:/Users/danny/OneDrive/Desktop/my-first-project/portfolio_dashboard.html)**: Interactive visual dashboard.

@@ -4,9 +4,9 @@ This document defines the quantitative strategies, risk parameters, asset alloca
 
 ---
 
-## 📊 3-Bucket Capital Allocation Framework
+## 📊 Capital Allocation & Tech-Forward Architecture
 
-Capital is systematically partitioned across three distinct strategy buckets:
+Capital is systematically partitioned across distinct strategy buckets, leveraging Robinhood's tech-forward features (**24/5 Market**, **Agentic Sandboxing**, **Event Contracts**, and **High-Yield Cash Sweep**):
 
 ```
                   ┌─────────────────────────────────────────┐
@@ -20,14 +20,24 @@ Capital is systematically partitioned across three distinct strategy buckets:
 │   Options    │               │    Crypto    │               │   Equities   │
 │  ($50.00)    │               │  ($50.00)    │               │  (~$50.00)   │
 └──────────────┘               └──────────────┘               └──────────────┘
+        │                              │                              │
+        └──────────────────────────────┼──────────────────────────────┘
+                                       ▼
+                     ┌──────────────────────────────────┐
+                     │ Bucket 4: Event Contracts &      │
+                     │ High-Yield Cash Sweep Reserve    │
+                     └──────────────────────────────────┘
 ```
 
 ---
 
 ## 💡 Strategy Guides & Quantitative Execution Rules
 
-### 1. 📊 Equities Bucket (~$50.00 Allocation) — Buying Quality Stocks "On Sale"
+### 1. 📊 Equities Bucket (~$50.00 Allocation) — Buying Quality Stocks & 24/5 Trading
 * **Beginner Explanation**: Think of quality stocks (like NVIDIA or the S&P 500 ETF) like items at a store. Sometimes their prices dip temporarily below their true value. We use mathematical meters (**RSI** and **Bollinger Bands**) to find when a stock is temporarily "on sale" (oversold), buy a small fractional position, and automatically lock in profits (+4.0%) when it bounces back.
+* **24/5 Extended Hours Trading (Blue Ocean ATS)**:
+  - Takes advantage of Robinhood's **24 Hour Market** (Sunday 8:00 PM EST to Friday 8:00 PM EST).
+  - Uses Extended Hours Limit Orders (`market_hours="extended_hours"`) to trade breaking earnings reports, macroeconomic releases, and Asian market session opens.
 * **Quantitative Rules**:
   - **RSI (14-period)**: BUY when RSI < 35 (Oversold); SELL when RSI > 70 (Overbought).
   - **MACD (12, 26, 9)**: Bullish crossover (`MACD > Signal`) triggers accumulation.
@@ -57,21 +67,25 @@ Capital is systematically partitioned across three distinct strategy buckets:
 * **Quantitative Execution Rules**:
   - **Indicator Signals**:
     * **RSI Dip Buy**: BUY when 4-hour RSI < 38 (Oversold pullback).
-    * **MACD Crossover**: BUY when 1-hour MACD line crosses above Signal line during off-hours/weekend sessions.
-    * **Bollinger Breakout**: BUY on price crossing above 20-period Middle Band.
+    * **MACD Crossover**: BUY when 1-hour MACD line crosses above Signal line.
   - **Order Sizing**: **$10.00 – $25.00** dollar-based fractional orders.
-  - **Take Profit**: **+5.00% to +8.00%** profit target (capturing crypto volatility).
-  - **Stop Loss**: **-3.00%** loss limit (protecting against sharp crypto drawdowns).
+  - **Take Profit**: **+5.00% to +8.00%** profit target.
+  - **Stop Loss**: **-3.00%** loss limit.
+
+---
+
+### 4. 🎯 Bucket 4: Event Contracts & High-Yield Cash Sweep Reserve
+* **Event Contracts & Prediction Markets (via Kalshi)**:
+  - Trades binary $0.01 – $0.99 "Yes/No" contracts on Federal Reserve interest rate announcements, CPI inflation reports, and macroeconomic events.
+  - Acts as a tail-risk macro hedge for equity positions. Realized P&L tracked via `get_pnl_trade_history`.
+* **High-Yield Uninvested Cash Sweep**:
+  - All uninvested settled cash automatically earns competitive APY interest (4.50%+ for Gold members) in FDIC-insured partner banks while waiting for technical dip-buy signals.
 
 ---
 
 ## 🛡️ Regulatory & Legal Compliance Framework
 
-1. **FINRA Rule 4210 (PDT Protection)**:
-   - Rolling 5-day day-trade tracking capping intraday roundtrips at a maximum of **2 day-trades per 5 rolling business days**.
-2. **SEC Regulation T (GFV Lock)**:
-   - Enforces cash-account settlement tracking (`unsettled_buys`), prohibiting same-day liquidation of positions bought with unsettled funds.
-3. **IRS Code § 1091 (Wash Sale Disallowance)**:
-   - Automatically logs 31-day wash-sale cooldowns on liquidated loss positions and blocks re-entry during cooldown (e.g. QQQ restricted through Aug 17, 2026).
-4. **Pre-Trade Compliance Disclosures (Robinhood MCP Protocol)**:
-   - Mandates order simulation review (`review_equity_order` & `review_option_order`) inspecting bid/ask spreads, regulatory fees ($0.04 total), and broker compliance alerts (`order_checks`) prior to live execution.
+1. **FINRA Rule 4210 (PDT Protection)**: Rolling 5-day day-trade tracking capping intraday roundtrips at a max of 2 per 5 days.
+2. **SEC Regulation T (GFV Lock)**: Cash settlement tracking prohibiting same-day liquidation of positions bought with unsettled funds.
+3. **IRS Code § 1091 (Wash Sale Disallowance)**: 31-day wash-sale cooldown logging and buy-blocking on loss positions.
+4. **Pre-Trade Compliance Disclosures (Robinhood MCP Protocol)**: Mandates order simulation review (`review_equity_order` & `review_option_order`) prior to live execution.
