@@ -129,12 +129,18 @@ async def run_portfolio_cycle():
                 logger.info("Step 3: Checking Crypto Watchlist & Quotes...")
                 crypto_pairs = ["BTC-USD", "ETH-USD", "SOL-USD", "DOGE-USD"]
                 crypto_quotes = {}
-                for pair in crypto_pairs:
+
+                async def fetch_crypto_quote(pair):
                     try:
                         c_res = await session.call_tool("search", arguments={"query": pair, "asset_type": "currency_pair"})
-                        crypto_quotes[pair] = json.loads(c_res.content[0].text)
+                        return pair, json.loads(c_res.content[0].text)
                     except Exception as e:
-                        crypto_quotes[pair] = {"error": str(e)}
+                        return pair, {"error": str(e)}
+
+                tasks = [fetch_crypto_quote(pair) for pair in crypto_pairs]
+                gather_results = await asyncio.gather(*tasks)
+                for pair, quote in gather_results:
+                    crypto_quotes[pair] = quote
                 results["crypto_quotes"] = crypto_quotes
 
                 # 4. Pre-Trade Simulation Reviews
