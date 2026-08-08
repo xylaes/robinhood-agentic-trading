@@ -9,16 +9,19 @@ node_modules/
 __pycache__/
 *.pyc
 
-# Local Logs & Generated Data Files
+# Local Logs, Dashboards & Dynamic State Files (Not Tracked in Repo)
 *.log
 *.json
+agent_journal.md
+portfolio_dashboard.html
+system_full_state.json
 
-# Scratch Python Scripts (Keep Core Entrypoints Only)
+# Scratch Python Scripts (Keep Core Open-Source Entrypoints Only)
 *.py
 !portfolio_manager.py
 !test_connection.py
 
-# Miscellaneous Local Scratch Assets & Subdirectories
+# Miscellaneous Local Scratch Assets & Markdown Files
 *.sql
 *.bat
 *.ps1
@@ -27,7 +30,7 @@ __pycache__/
 !STRATEGY.md
 !USAGE_GUIDE.md
 !WALKTHROUGH.md
-!agent_journal.md
+!agent_journal.example.md
 
 # Ignore any untracked local subdirectories
 */
