@@ -83,12 +83,15 @@ Capital is systematically partitioned across distinct strategy buckets, leveragi
 
 ---
 
-### 5. ⚖️ Automated Risk Exposure & Portfolio Rebalancing Engine
-* **Target Benchmark**: Equal **33.33% / 33.33% / 33.33%** capital allocation target ($50.00 each across Equities, Options, and Crypto).
+### 5. ⚖️ Automated Risk Exposure & Dynamic Capital Scaling Engine
+* **Target Benchmark**: Equal **33.33% / 33.33% / 33.33%** capital allocation target across Equities, Options, and Crypto.
 * **Drift Tolerance Threshold**: **±10.0%**. An automated rebalancing alert (`rebalance_required: true`) triggers whenever any asset bucket strays > 10% from benchmark.
-* **Risk Exposure Metrics**:
-  - **Cash Reserve Ratio**: Tracks percentage of uninvested capital.
-  - **Concentration Risk**: Monitors active holdings count to prevent single-stock over-concentration.
+* **Dynamic Position Sizing Formulas (Scalability for $150 → $1,000 → $10,000+)**:
+  - **Bucket Dollar Targets**: $\text{Target}_{\text{Bucket}} = \text{Net Worth} \times 0.3333$
+  - **Fractional Stock Order Sizing**: $\text{Order Size}_{\text{Equity}} = \min(\text{Target}_{\text{Equities}} \times 0.20, \text{Buying Power})$
+  - **Crypto Order Sizing**: $\text{Order Size}_{\text{Crypto}} = \min(\text{Target}_{\text{Crypto}} \times 0.20, \text{Buying Power})$
+  - **Option Premium Cap**: $\text{Max Premium}_{\text{Option}} = \min(\text{Target}_{\text{Options}} \times 0.70, \text{Buying Power})$
+  - **Macro Hedge Budget**: $\text{Hedge Budget}_{\text{Macro}} = \min(\text{Net Worth} \times 0.10, 50.00)$
 * **Automated Capital Deployment**: Automatically directs uninvested cash reserves toward undershot buckets when technical dip signals or market opportunities occur.
 
 ---
