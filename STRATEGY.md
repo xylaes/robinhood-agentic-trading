@@ -83,6 +83,16 @@ Capital is systematically partitioned across distinct strategy buckets, leveragi
 
 ---
 
+### 5. ⚖️ Automated Risk Exposure & Portfolio Rebalancing Engine
+* **Target Benchmark**: Equal **33.33% / 33.33% / 33.33%** capital allocation target ($50.00 each across Equities, Options, and Crypto).
+* **Drift Tolerance Threshold**: **±10.0%**. An automated rebalancing alert (`rebalance_required: true`) triggers whenever any asset bucket strays > 10% from benchmark.
+* **Risk Exposure Metrics**:
+  - **Cash Reserve Ratio**: Tracks percentage of uninvested capital.
+  - **Concentration Risk**: Monitors active holdings count to prevent single-stock over-concentration.
+* **Automated Capital Deployment**: Automatically directs uninvested cash reserves toward undershot buckets when technical dip signals or market opportunities occur.
+
+---
+
 ## 🛡️ Regulatory & Legal Compliance Framework
 
 1. **FINRA Rule 4210 (PDT Protection)**: Rolling 5-day day-trade tracking capping intraday roundtrips at a max of 2 per 5 days.
