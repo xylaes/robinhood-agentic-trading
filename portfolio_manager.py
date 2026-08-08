@@ -20,6 +20,7 @@ from src.config import EQUITY_WATCHLIST, CRYPTO_WATCHLIST, SizingEngine
 from src.ssot import GitHubSourceOfTruth
 from src.macro_hedging import EventContractManager
 from src.risk_manager import PortfolioRiskAndRebalanceManager
+from src.analysis_digest import PortfolioDigestGenerator
 
 # Configure Logging
 logging.basicConfig(
@@ -194,6 +195,10 @@ async def run_portfolio_cycle():
                 logger.info("Step 6: Running Automated Risk Exposure & Rebalancing Analysis...")
                 risk_rebalance = PortfolioRiskAndRebalanceManager.analyze_risk_and_rebalance(portfolio_data, pos_data)
                 results["risk_and_rebalance"] = risk_rebalance
+
+                # 7. Generate Human-Readable Executive Portfolio Digest
+                logger.info("Step 7: Generating Human-Readable Executive Portfolio Digest (PORTFOLIO_ANALYSIS.md)...")
+                PortfolioDigestGenerator.generate_digest(results)
 
                 # Save results state
                 with open("system_full_state.json", "w", encoding="utf-8") as f:
