@@ -15,6 +15,7 @@ __pycache__/
 agent_journal.md
 portfolio_dashboard.html
 system_full_state.json
+PORTFOLIO_ANALYSIS.md
 
 # Scratch Python Scripts (Keep Core Open-Source Entrypoints Only)
 *.py
@@ -34,4 +35,4 @@ system_full_state.json
 !USAGE_GUIDE.md
 !WALKTHROUGH.md
 !agent_journal.example.md
-!PORTFOLIO_ANALYSIS.md
+!PORTFOLIO_ANALYSIS.example.md

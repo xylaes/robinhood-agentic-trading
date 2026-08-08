@@ -19,7 +19,7 @@ class PortfolioDigestGenerator:
 
         timestamp = results.get("timestamp", datetime.datetime.utcnow().isoformat())
         edt_time_str = datetime.datetime.now().strftime("%Y-%m-%d (%H:%M EDT)")
-        account_num = results.get("account_number", "618678015")
+        account_num = results.get("account_number", "AgenticAccount")
 
         portfolio_data = results.get("portfolio", {}).get("data", {})
         total_val = float(portfolio_data.get("total_value", 0) or portfolio_data.get("equity", 0) or 0)
