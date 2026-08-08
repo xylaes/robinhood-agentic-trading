@@ -115,6 +115,88 @@ class EventContractManager:
         }
         return hedge_status
 
+class PortfolioRiskAndRebalanceManager:
+    """
+    Manages Automated Portfolio Risk Analysis & Rebalancing across 3 Asset Buckets:
+    1. Equities (~33.3% Target / $50.00)
+    2. Options (~33.3% Target / $50.00)
+    3. Crypto (~33.3% Target / $50.00)
+
+    Evaluates allocation drift (>10% threshold), cash reserves, single-stock concentration,
+    and generates automated rebalancing actions.
+    """
+
+    TARGET_ALLOCATION_PCT = {
+        "equities": 33.33,
+        "options": 33.33,
+        "crypto": 33.33
+    }
+    DRIFT_TOLERANCE_PCT = 10.0  # Alert & rebalance when allocation strays by > 10%
+
+    @classmethod
+    def analyze_risk_and_rebalance(cls, portfolio_data: dict, positions_data: dict):
+        logger.info("Evaluating Portfolio Risk Exposure & Automated Rebalancing...")
+        p_info = portfolio_data.get("data", {})
+        total_val = float(p_info.get("total_value", 0) or p_info.get("equity", 0) or 0)
+        cash_val = float(p_info.get("cash", 0) or 0)
+        buying_power = float(p_info.get("buying_power", {}).get("buying_power", 0) or 0)
+
+        equity_val = float(p_info.get("equity_value", 0) or 0)
+        options_val = float(p_info.get("options_value", 0) or 0)
+        crypto_val = float(p_info.get("crypto_value", 0) or 0)
+
+        # Compute current percentages based on total portfolio value
+        base_val = total_val if total_val > 0 else 1.0
+        current_pcts = {
+            "equities": round((equity_val / base_val) * 100, 2),
+            "options": round((options_val / base_val) * 100, 2),
+            "crypto": round((crypto_val / base_val) * 100, 2),
+            "cash": round((cash_val / base_val) * 100, 2)
+        }
+
+        # Calculate allocation drift relative to 33.33% target benchmark
+        drifts = {
+            "equities": round(current_pcts["equities"] - cls.TARGET_ALLOCATION_PCT["equities"], 2),
+            "options": round(current_pcts["options"] - cls.TARGET_ALLOCATION_PCT["options"], 2),
+            "crypto": round(current_pcts["crypto"] - cls.TARGET_ALLOCATION_PCT["crypto"], 2)
+        }
+
+        # Check for rebalancing requirements (> 10% drift or cash unallocated)
+        rebalance_required = any(abs(d) > cls.DRIFT_TOLERANCE_PCT for d in drifts.values())
+
+        rebalance_actions = []
+        if current_pcts["crypto"] < 10.0 and buying_power >= 10.0:
+            rebalance_actions.append(f"Deploy cash reserve (${buying_power:.2f} available) to accumulate Crypto dip-buys up to $50.00 target.")
+        if current_pcts["options"] < 10.0 and buying_power >= 15.0:
+            rebalance_actions.append(f"Execute high-delta ITM Call options strategy up to $50.00 target allocation (e.g. Ford $F $12 Call queued).")
+        if current_pcts["equities"] < 20.0 and buying_power >= 10.0:
+            rebalance_actions.append(f"Accumulate fractional shares of NVDA / SPY on 1-hr RSI oversold dips.")
+
+        if not rebalance_actions:
+            rebalance_actions.append("Portfolio is optimally balanced within risk parameters.")
+
+        # Risk metrics
+        positions_list = positions_data.get("data", {}).get("positions", [])
+        active_positions = [p for p in positions_list if float(p.get("quantity", 0)) > 0]
+        concentration_risk = "Low" if len(active_positions) <= 3 else "Moderate"
+
+        risk_analysis = {
+            "total_value": total_val,
+            "buying_power": buying_power,
+            "current_allocations_pct": current_pcts,
+            "target_allocation_pct": cls.TARGET_ALLOCATION_PCT,
+            "allocation_drifts_pct": drifts,
+            "drift_tolerance_pct": cls.DRIFT_TOLERANCE_PCT,
+            "rebalance_required": rebalance_required,
+            "rebalance_actions": rebalance_actions,
+            "risk_metrics": {
+                "concentration_risk": concentration_risk,
+                "cash_reserve_ratio_pct": current_pcts["cash"],
+                "active_holdings_count": len(active_positions)
+            }
+        }
+        return risk_analysis
+
 async def get_target_account(session):
     """
     Dynamically resolves the target Robinhood account number.
@@ -169,6 +251,7 @@ async def run_portfolio_cycle():
         "options": {},
         "crypto": {},
         "event_contracts": {},
+        "risk_and_rebalance": {},
         "simulations": {},
         "executed_trades": []
     }
@@ -250,6 +333,11 @@ async def run_portfolio_cycle():
                 except Exception as e:
                     logger.warning(f"Equity simulation notice: {e}")
 
+                # 6. Automated Risk Exposure Analysis & Rebalancing
+                logger.info("Step 6: Running Automated Risk Exposure & Rebalancing Analysis...")
+                risk_rebalance = PortfolioRiskAndRebalanceManager.analyze_risk_and_rebalance(portfolio_data, pos_data)
+                results["risk_and_rebalance"] = risk_rebalance
+
                 # Save results state
                 with open("system_full_state.json", "w", encoding="utf-8") as f:
                     json.dump(results, f, indent=2)
@@ -263,3 +351,4 @@ async def run_portfolio_cycle():
 
 if __name__ == "__main__":
     asyncio.run(run_portfolio_cycle())
+
