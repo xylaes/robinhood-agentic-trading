@@ -20,6 +20,9 @@ system_full_state.json
 *.py
 !portfolio_manager.py
 !test_connection.py
+!src/
+!src/*.py
+!src/**/*.py
 
 # Miscellaneous Local Scratch Assets & Markdown Files
 *.sql
@@ -31,6 +34,3 @@ system_full_state.json
 !USAGE_GUIDE.md
 !WALKTHROUGH.md
 !agent_journal.example.md
-
-# Ignore any untracked local subdirectories
-*/
