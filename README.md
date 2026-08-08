@@ -17,6 +17,7 @@ This system takes full advantage of Robinhood’s industry-leading fintech innov
 2. 🎯 **Event Contracts & Prediction Markets (via Kalshi)**: Uses binary $0.01 – $0.99 macro contracts (Fed interest rates, CPI inflation data) to hedge equity positions, tracked via `get_pnl_trade_history`.
 3. 🛡️ **Agentic Sub-Accounts & Budget Sandboxing**: Operates safely inside a dedicated sub-account (`618678015`) with push notifications and budget sandboxing, keeping primary wealth 100% air-gapped.
 4. 💵 **High-Yield Uninvested Cash Sweep**: Uninvested settled cash automatically earns top-tier APY interest in FDIC-insured partner banks while waiting for technical dip-buy signals.
+5. ⚖️ **Automated Risk Exposure & Rebalancing Engine**: Continuously evaluates capital concentration across the 3 core asset buckets (Equities, Options, Crypto) against the target 33.3% benchmark, alerting on allocation drift >10% and calculating cash reserve ratios.
 
 ---
 
@@ -29,6 +30,7 @@ graph TD
     AGY["Google Antigravity (AGY) Engine"] -->|Model Context Protocol IPC| MCP["Robinhood MCP Trading Gateway"]
     MCP -->|Account & Portfolio Sync| Portfolio["Live Portfolio Sync (Net Worth & Balances)"]
     MCP -->|Server Technical Indicators| Analytics["1h RSI, MACD, Bollinger Bands"]
+    MCP -->|Risk & Drift Engine| Rebalance["Automated Risk & Rebalance Analysis (33/33/33 Split)"]
     MCP -->|Compliance Pre-Trade Review| Simulation["Pre-Trade Order Review (review_equity_order / review_option_order)"]
     
     Simulation -->|User Approval / Signal Trigger| Execution["Live Trade Execution (place_equity_order / place_option_order)"]
@@ -37,6 +39,7 @@ graph TD
 
     style AGY fill:#7c3aed,stroke:#fff,color:#fff
     style MCP fill:#059669,stroke:#fff,color:#fff
+    style Rebalance fill:#d97706,stroke:#fff,color:#fff
     style Simulation fill:#3b82f6,stroke:#fff,color:#fff
     style Dashboard fill:#00c805,stroke:#fff,color:#fff
 ```
