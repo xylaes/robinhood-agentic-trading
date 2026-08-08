@@ -333,6 +333,27 @@ async def run_portfolio_cycle():
                 except Exception as e:
                     logger.warning(f"Equity simulation notice: {e}")
 
+                try:
+                    opt_sim = await session.call_tool("review_option_order", arguments={
+                        "account_number": account_num,
+                        "chain_symbol": "F",
+                        "underlying_type": "equity",
+                        "type": "limit",
+                        "quantity": "1",
+                        "price": "0.35",
+                        "legs": [
+                            {
+                                "option_id": "150a3cae-bed2-406b-8d0b-27714de083ca",
+                                "side": "buy",
+                                "position_effect": "open",
+                                "ratio_quantity": 1
+                            }
+                        ]
+                    })
+                    results["simulations"]["option_review"] = json.loads(opt_sim.content[0].text)
+                except Exception as e:
+                    logger.warning(f"Option simulation notice: {e}")
+
                 # 6. Automated Risk Exposure Analysis & Rebalancing
                 logger.info("Step 6: Running Automated Risk Exposure & Rebalancing Analysis...")
                 risk_rebalance = PortfolioRiskAndRebalanceManager.analyze_risk_and_rebalance(portfolio_data, pos_data)
