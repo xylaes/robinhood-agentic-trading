@@ -96,6 +96,7 @@ This project enforces 4 mandatory financial regulatory protection rules directly
 
 ## 🖥️ Visual Dashboard & Diagnostic Testing
 
+* 📑 **Human-Readable Executive Digest**: Open [**`PORTFOLIO_ANALYSIS.md`**](file:///c:/Users/danny/OneDrive/Desktop/my-first-project/PORTFOLIO_ANALYSIS.md) for a plain-English executive summary of portfolio health, asset bucket drift, active holdings, and macro catalysts.
 * 📊 **Interactive Visual Dashboard**: Open [**`portfolio_dashboard.html`**](file:///c:/Users/danny/OneDrive/Desktop/my-first-project/portfolio_dashboard.html) in your browser to view real-time capital allocation charts, P&L tables, and queued order audits.
 * 🧪 **5-Second Connection Test**: Run `python test_connection.py` on any machine to verify Robinhood MCP gateway connectivity and agentic permissions instantly.
 * 📝 **Chronological Agent Journal**: Open [**`agent_journal.md`**](file:///c:/Users/danny/OneDrive/Desktop/my-first-project/agent_journal.md) to review full timestamped records of every technical scan, simulation preview, and trade execution.
