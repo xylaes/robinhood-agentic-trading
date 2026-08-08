@@ -15,7 +15,7 @@ This system takes full advantage of Robinhood’s industry-leading fintech innov
 
 1. 🌙 **24-Hour Market (24/5 Equities & ETF Trading)**: Executes extended hours limit orders (`market_hours="extended_hours"`) via Blue Ocean ATS from Sunday 8:00 PM EST to Friday 8:00 PM EST to capitalize on earnings reports and Asian market opens.
 2. 🎯 **Event Contracts & Prediction Markets (via Kalshi)**: Uses binary $0.01 – $0.99 macro contracts (Fed interest rates, CPI inflation data) to hedge equity positions, tracked via `get_pnl_trade_history`.
-3. 🛡️ **Agentic Sub-Accounts & Budget Sandboxing**: Operates safely inside a dedicated sub-account (`618678015`) with push notifications and budget sandboxing, keeping primary wealth 100% air-gapped.
+3. 🛡️ **Agentic Sub-Accounts & Budget Sandboxing**: Operates safely inside a dedicated agentic sub-account with push notifications and budget sandboxing, keeping primary wealth 100% air-gapped.
 4. 💵 **High-Yield Uninvested Cash Sweep**: Uninvested settled cash automatically earns top-tier APY interest in FDIC-insured partner banks while waiting for technical dip-buy signals.
 5. ⚖️ **Automated Risk Exposure & Rebalancing Engine**: Continuously evaluates capital concentration across the 3 core asset buckets (Equities, Options, Crypto) against the target 33.3% benchmark, alerting on allocation drift >10% and calculating cash reserve ratios.
 
@@ -96,10 +96,10 @@ This project enforces 4 mandatory financial regulatory protection rules directly
 
 ## 🖥️ Visual Dashboard & Diagnostic Testing
 
-* 📑 **Human-Readable Executive Digest**: Open [**`PORTFOLIO_ANALYSIS.md`**](file:///c:/Users/danny/OneDrive/Desktop/my-first-project/PORTFOLIO_ANALYSIS.md) for a plain-English executive summary of portfolio health, asset bucket drift, active holdings, and macro catalysts.
+* 📑 **Human-Readable Executive Digest**: Open [**`PORTFOLIO_ANALYSIS.example.md`**](file:///c:/Users/danny/OneDrive/Desktop/my-first-project/PORTFOLIO_ANALYSIS.example.md) (or local `PORTFOLIO_ANALYSIS.md` generated on run) for a plain-English summary of portfolio health, asset bucket drift, active holdings, and macro catalysts.
 * 📊 **Interactive Visual Dashboard**: Open [**`portfolio_dashboard.html`**](file:///c:/Users/danny/OneDrive/Desktop/my-first-project/portfolio_dashboard.html) in your browser to view real-time capital allocation charts, P&L tables, and queued order audits.
 * 🧪 **5-Second Connection Test**: Run `python test_connection.py` on any machine to verify Robinhood MCP gateway connectivity and agentic permissions instantly.
-* 📝 **Chronological Agent Journal**: Open [**`agent_journal.md`**](file:///c:/Users/danny/OneDrive/Desktop/my-first-project/agent_journal.md) to review full timestamped records of every technical scan, simulation preview, and trade execution.
+* 📝 **Chronological Agent Journal**: Open [**`agent_journal.example.md`**](file:///c:/Users/danny/OneDrive/Desktop/my-first-project/agent_journal.example.md) to review full timestamped records of every technical scan, simulation preview, and trade execution.
 
 ---
 
@@ -140,7 +140,7 @@ python portfolio_manager.py
 ## 📂 Repository Structure
 
 * 📂 **[`src/`](file:///c:/Users/danny/OneDrive/Desktop/my-first-project/src)**: Modular Python package (`config.py`, `ssot.py`, `macro_hedging.py`, `risk_manager.py`, `analysis_digest.py`).
-* 📊 **[PORTFOLIO_ANALYSIS.md](file:///c:/Users/danny/OneDrive/Desktop/my-first-project/PORTFOLIO_ANALYSIS.md)**: Auto-generated human-readable executive digest & analysis report.
+* 📊 **[PORTFOLIO_ANALYSIS.example.md](file:///c:/Users/danny/OneDrive/Desktop/my-first-project/PORTFOLIO_ANALYSIS.example.md)**: Sanitized template of auto-generated executive digest & analysis report.
 * 🎬 **[WALKTHROUGH.md](file:///c:/Users/danny/OneDrive/Desktop/my-first-project/WALKTHROUGH.md)**: System Architecture Diagram & step-by-step beginner guide.
 * 🧠 **[STRATEGY.md](file:///c:/Users/danny/OneDrive/Desktop/my-first-project/STRATEGY.md)**: Detailed trading strategy rules for Equities, Options, Crypto, and Event Markets.
 * 📖 **[USAGE_GUIDE.md](file:///c:/Users/danny/OneDrive/Desktop/my-first-project/USAGE_GUIDE.md)**: Non-technical showcase guide & schedule frequency rules.
