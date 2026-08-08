@@ -1,0 +1,36 @@
+# Environment & Secrets
+.env
+.env*
+!.env.example
+.venv/
+node_modules/
+.agents/
+.gemini/
+__pycache__/
+*.pyc
+
+# Local Logs, Dashboards & Dynamic State Files (Not Tracked in Repo)
+*.log
+*.json
+agent_journal.md
+portfolio_dashboard.html
+system_full_state.json
+
+# Scratch Python Scripts (Keep Core Open-Source Entrypoints Only)
+*.py
+!portfolio_manager.py
+!test_connection.py
+
+# Miscellaneous Local Scratch Assets & Markdown Files
+*.sql
+*.bat
+*.ps1
+*.md
+!README.md
+!STRATEGY.md
+!USAGE_GUIDE.md
+!WALKTHROUGH.md
+!agent_journal.example.md
+
+# Ignore any untracked local subdirectories
+*/
