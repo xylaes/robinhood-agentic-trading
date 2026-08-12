@@ -2,6 +2,8 @@
 .env
 .env*
 !.env.example
+robinhood_crypto_keys.txt
+
 .venv/
 node_modules/
 .agents/

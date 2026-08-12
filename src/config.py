@@ -16,6 +16,10 @@ DRIFT_TOLERANCE_PCT = 10.0  # Alert & trigger rebalancing if bucket strays > 10%
 EQUITY_WATCHLIST = ["NVDA", "SPY", "QQQ", "AAPL"]
 CRYPTO_WATCHLIST = ["BTC-USD", "ETH-USD", "SOL-USD", "DOGE-USD"]
 
+# Robinhood Crypto API Endpoint Config
+ROBINHOOD_CRYPTO_BASE_URL = "https://trading.robinhood.com"
+
+
 # Dynamic Capital Scaling Functions
 class SizingEngine:
     """

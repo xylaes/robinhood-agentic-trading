@@ -4,8 +4,9 @@
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![AGY Compatibility](https://img.shields.io/badge/AGY-2.0--Ready-purple)
 ![Robinhood MCP](https://img.shields.io/badge/Robinhood--MCP-Enabled-emerald)
+![Robinhood Crypto API](https://img.shields.io/badge/Robinhood--Crypto--API-Ed25519-orange)
 
-An institutional-grade, multi-asset autonomous AI portfolio management system built for **Google Antigravity (AGY)** and the **Robinhood MCP Trading Gateway**.
+An institutional-grade, multi-asset autonomous AI portfolio management system built for **Google Antigravity (AGY)**, the **Robinhood MCP Trading Gateway**, and the **Robinhood Crypto Trading REST API**.
 
 ---
 
@@ -14,31 +15,37 @@ An institutional-grade, multi-asset autonomous AI portfolio management system bu
 This system takes full advantage of Robinhood’s industry-leading fintech innovations:
 
 1. 🌙 **24-Hour Market (24/5 Equities & ETF Trading)**: Executes extended hours limit orders (`market_hours="extended_hours"`) via Blue Ocean ATS from Sunday 8:00 PM EST to Friday 8:00 PM EST to capitalize on earnings reports and Asian market opens.
-2. 🎯 **Event Contracts & Prediction Markets (via Kalshi)**: Uses binary $0.01 – $0.99 macro contracts (Fed interest rates, CPI inflation data) to hedge equity positions, tracked via `get_pnl_trade_history`.
-3. 🛡️ **Agentic Sub-Accounts & Budget Sandboxing**: Operates safely inside a dedicated agentic sub-account with push notifications and budget sandboxing, keeping primary wealth 100% air-gapped.
-4. 💵 **High-Yield Uninvested Cash Sweep**: Uninvested settled cash automatically earns top-tier APY interest in FDIC-insured partner banks while waiting for technical dip-buy signals.
-5. ⚖️ **Automated Risk Exposure & Rebalancing Engine**: Continuously evaluates capital concentration across the 3 core asset buckets (Equities, Options, Crypto) against the target 33.3% benchmark, alerting on allocation drift >10% and calculating cash reserve ratios.
+2. 🪙 **24/7 Robinhood Crypto REST API Trading**: Operates continuous 365 days/year Ed25519-authenticated crypto market data queries and order execution (`src/crypto_client.py`) for `BTC-USD`, `ETH-USD`, `SOL-USD`, and `DOGE-USD`.
+3. 🎯 **Event Contracts & Prediction Markets (via Kalshi)**: Uses binary $0.01 – $0.99 macro contracts (Fed interest rates, CPI inflation data) to hedge equity positions, tracked via `get_pnl_trade_history`.
+4. 🛡️ **Agentic Sub-Accounts & Budget Sandboxing**: Operates safely inside a dedicated agentic sub-account (`...8015`) with push notifications and budget sandboxing, keeping primary wealth 100% air-gapped.
+5. 💵 **High-Yield Uninvested Cash Sweep**: Uninvested settled cash automatically earns top-tier APY interest in FDIC-insured partner banks while waiting for technical dip-buy signals.
+6. ⚖️ **Automated Risk Exposure & Rebalancing Engine**: Continuously evaluates capital concentration across the 3 core asset buckets (Equities, Options, Crypto) against the target 33.3% benchmark, alerting on allocation drift >10% and calculating cash reserve ratios.
 
 ---
 
 ## 🏛️ System Architecture Diagram
 
-Explore the complete step-by-step system walkthrough & detailed guide in [**`WALKTHROUGH.md`**](file:///c:/Users/danny/OneDrive/Desktop/my-first-project/WALKTHROUGH.md).
+Explore the complete step-by-step system walkthrough in [`WALKTHROUGH.md`](WALKTHROUGH.md) and scheduling guide in [`SCHEDULE.md`](SCHEDULE.md).
 
 ```mermaid
 graph TD
     AGY["Google Antigravity (AGY) Engine"] -->|Model Context Protocol IPC| MCP["Robinhood MCP Trading Gateway"]
-    MCP -->|Account & Portfolio Sync| Portfolio["Live Portfolio Sync (Net Worth & Balances)"]
-    MCP -->|Server Technical Indicators| Analytics["1h RSI, MACD, Bollinger Bands"]
-    MCP -->|Risk & Drift Engine| Rebalance["Automated Risk & Rebalance Analysis (33/33/33 Split)"]
-    MCP -->|Compliance Pre-Trade Review| Simulation["Pre-Trade Order Review (review_equity_order / review_option_order)"]
+    AGY -->|Ed25519 REST API Signatures| CryptoAPI["Robinhood Crypto Trading API"]
     
-    Simulation -->|User Approval / Signal Trigger| Execution["Live Trade Execution (place_equity_order / place_option_order)"]
-    Execution -->|Logging & Monitoring| Journal["Agent Journal (agent_journal.md)"]
+    MCP -->|Equities & Options Sync| Portfolio["Live Portfolio Sync (Net Worth & Balances)"]
+    MCP -->|Server Technical Indicators| Analytics["1h RSI, MACD, Bollinger Bands"]
+    CryptoAPI -->|24/7 Market Data & Orders| CryptoEngine["24/7 Crypto Momentum Engine"]
+    
+    MCP -->|Risk & Drift Engine| Rebalance["Automated Risk & Rebalance Analysis (33/33/33 Split)"]
+    Rebalance -->|Compliance Pre-Trade Review| Simulation["Pre-Trade Order Review (review_equity_order / review_option_order / Crypto API)"]
+    
+    Simulation -->|User Approval / Signal Trigger| Execution["Live Trade Execution"]
+    Execution -->|Executive Digest| Digest["Executive Report (PORTFOLIO_ANALYSIS.md)"]
     Execution -->|Visual Display| Dashboard["Interactive Dashboard (portfolio_dashboard.html)"]
 
     style AGY fill:#7c3aed,stroke:#fff,color:#fff
     style MCP fill:#059669,stroke:#fff,color:#fff
+    style CryptoAPI fill:#f59e0b,stroke:#fff,color:#fff
     style Rebalance fill:#d97706,stroke:#fff,color:#fff
     style Simulation fill:#3b82f6,stroke:#fff,color:#fff
     style Dashboard fill:#00c805,stroke:#fff,color:#fff
@@ -48,7 +55,7 @@ graph TD
 
 ## 🌟 Executive Overview (Showcase Summary)
 
-The **Robinhood Agentic Trading Portfolio Manager** is an autonomous AI investment system designed to demonstrate how cutting-edge LLM agents can safely interact with live financial brokerage APIs via the **Model Context Protocol (MCP)**.
+The **Robinhood Agentic Trading Portfolio Manager** is an autonomous AI investment system designed to demonstrate how cutting-edge LLM agents can safely interact with live financial brokerage APIs via the **Model Context Protocol (MCP)** and **Ed25519 Authenticated REST APIs**.
 
 Rather than making emotional human trades or relying on simple rule-based scripts, the system operates as an **algorithmic 4-bucket portfolio manager** — combining institutional technical indicators (RSI, MACD, Bollinger Bands), strict SEC/FINRA regulatory safeguards, and pre-trade simulation reviews to manage capital across **Equities**, **Options**, **Crypto**, and **Event Markets**.
 
@@ -56,30 +63,25 @@ Rather than making emotional human trades or relying on simple rule-based script
 
 ## 💡 Beginner-Friendly Trading Strategies
 
-For a full quantitative strategy breakdown, see [**`STRATEGY.md`**](file:///c:/Users/danny/OneDrive/Desktop/my-first-project/STRATEGY.md).
+For a full quantitative strategy breakdown, see [`STRATEGY.md`](STRATEGY.md).
 
 * 📊 **Equities Bucket (~$50.00) — Buying Quality Stocks "On Sale" & 24/5 Trading**: Uses 1-hour RSI, MACD, and Bollinger Bands to identify when strong stocks (`NVDA`, `SPY`, `QQQ`, `AAPL`) are dip-buying opportunities during regular and 24/5 extended hours (+4.0% Take Profit, -2.0% Stop Loss).
 * 🎯 **Options Bucket ($50.00) — "Discount Coupons" with High Odds**: Single-leg **High-Delta In-The-Money Calls** (Delta 0.75 – 0.85+, **80%+ Win Probability**, $15 – $40 premium cap) controlling 100 shares for high-probability gains.
-* 🪙 **Crypto Bucket ($50.00) — 24/7 Off-Hours Momentum & Dip-Buying**: Continuous 24/7 monitoring of `BTC-USD`, `ETH-USD`, `SOL-USD`, and `DOGE-USD` on the "Agentic Crypto" watchlist. Buys $10–$25 oversold dips (RSI < 38) and locks in **+5.0% to +8.0% profits** (-3.0% Stop Loss).
+* 🪙 **Crypto Bucket ($50.00) — 24/7 Off-Hours Momentum & Dip-Buying**: Continuous 24/7 monitoring of `BTC-USD`, `ETH-USD`, `SOL-USD`, and `DOGE-USD` via the Robinhood Crypto REST API. Buys $10–$25 oversold dips (RSI < 38) and locks in **+5.0% to +8.0% profits** (-3.0% Stop Loss).
 * 🎯 **Event Contracts & Cash Sweep Reserve**: Macro risk hedging via binary event contracts and automatic high-yield APY interest on uninvested settled cash.
 
 ---
 
-## 💼 Resume & Portfolio Summary (For Recruiters & Executives)
+## ⏰ Recommended Execution Schedules
 
-> *"Engineered an autonomous AI multi-asset portfolio manager using Google Antigravity (AGY) and the Robinhood MCP Trading Gateway. Architected a 4-bucket quantitative allocation model (Equities, Level 2 Options, 24/7 Crypto, Event Contracts) leveraging 24/5 Blue Ocean ATS trading, high-yield cash sweeps, and FINRA Rule 4210 (PDT), SEC Reg T (GFV), and IRS Code § 1091 (Wash Sale) safeguards with zero PII exposure."*
+For complete schedule options, copy-pasteable AGY `/schedule` prompts, and session window breakdowns, see [`SCHEDULE.md`](SCHEDULE.md) and [`USAGE_GUIDE.md`](USAGE_GUIDE.md).
 
----
-
-## ⏰ Recommended Schedule Frequencies
-
-For operational setup instructions, see [**`USAGE_GUIDE.md`**](file:///c:/Users/danny/OneDrive/Desktop/my-first-project/USAGE_GUIDE.md).
-
-| Asset Class / Bucket | Recommended Schedule Frequency | Active Session Hours | Objective |
+| Strategy Branch | Command / Target | Recommended Frequency | Active Session Hours |
 | :--- | :--- | :--- | :--- |
-| **Equities & 24/5 ETFs** | **Hourly** (`0 * * * *`) | Mon–Fri 24/5 (Blue Ocean ATS Session) | Monitor RSI oversold setups & take-profit / stop-loss boundaries |
-| **Level 2 Options** | **Hourly or Pre-Market** | Mon–Fri, 9:30 AM – 4:00 PM EST | Scan High-Delta ITM Calls & manage option expirations |
-| **24/7 Crypto** | **Every 4 Hours** (`0 */4 * * *`) | 24 Hours / 7 Days a Week | Track Bitcoin, Ethereum, Solana, and Dogecoin momentum |
+| **🟢 Full-Run (Option 1)** | `python portfolio_manager.py --branch full` | **Every 2 Hours** (`0 */2 * * *`) | Continuous 24/7 |
+| **📈 Equities (Option 2)** | `python portfolio_manager.py --branch equities` | **Hourly** (`0 * * * *`) | Mon–Fri 24/5 (Blue Ocean ATS) |
+| **🎯 Options (Option 2)** | `python portfolio_manager.py --branch options` | **Every 30 Minutes** | Mon–Fri, 9:30 AM – 4:00 PM EST |
+| **🪙 Crypto (Option 2)** | `python portfolio_manager.py --branch crypto` | **Every 2 Hours** | 24 Hours / 7 Days a Week |
 
 ---
 
@@ -96,10 +98,10 @@ This project enforces 4 mandatory financial regulatory protection rules directly
 
 ## 🖥️ Visual Dashboard & Diagnostic Testing
 
-* 📑 **Human-Readable Executive Digest**: Open [**`PORTFOLIO_ANALYSIS.example.md`**](file:///c:/Users/danny/OneDrive/Desktop/my-first-project/PORTFOLIO_ANALYSIS.example.md) (or local `PORTFOLIO_ANALYSIS.md` generated on run) for a plain-English summary of portfolio health, asset bucket drift, active holdings, and macro catalysts.
-* 📊 **Interactive Visual Dashboard**: Open [**`portfolio_dashboard.html`**](file:///c:/Users/danny/OneDrive/Desktop/my-first-project/portfolio_dashboard.html) in your browser to view real-time capital allocation charts, P&L tables, and queued order audits.
-* 🧪 **5-Second Connection Test**: Run `python test_connection.py` on any machine to verify Robinhood MCP gateway connectivity and agentic permissions instantly.
-* 📝 **Chronological Agent Journal**: Open [**`agent_journal.example.md`**](file:///c:/Users/danny/OneDrive/Desktop/my-first-project/agent_journal.example.md) to review full timestamped records of every technical scan, simulation preview, and trade execution.
+* 📑 **Human-Readable Executive Digest**: Open [`PORTFOLIO_ANALYSIS.md`](PORTFOLIO_ANALYSIS.md) for a plain-English summary of portfolio health, asset bucket drift, active holdings, and macro catalysts.
+* 📊 **Interactive Visual Dashboard**: Open [`portfolio_dashboard.html`](portfolio_dashboard.html) in your browser to view real-time capital allocation charts, P&L tables, and queued order audits.
+* 🧪 **5-Second Connection Test**: Run `python test_connection.py` to verify Robinhood MCP gateway and Robinhood Crypto API authentication instantly.
+* 📝 **Chronological Agent Journal**: Open [`agent_journal.example.md`](agent_journal.example.md) to review timestamped records of every technical scan, simulation preview, and trade execution.
 
 ---
 
@@ -116,7 +118,16 @@ Create a `.env` file from the provided `.env.example` template:
 ```bash
 cp .env.example .env
 ```
-*(Optional: Add your `ROBINHOOD_ACCOUNT_NUMBER=your_account_id` in `.env`, or leave blank for automatic resolution via Robinhood MCP).*
+
+To enable live 24/7 Robinhood Crypto REST API trading, generate an Ed25519 keypair and add credentials to `.env`:
+```bash
+python scripts/generate_crypto_keys.py
+```
+Add the assigned API key and private key to `.env`:
+```env
+ROBINHOOD_CRYPTO_API_KEY=rh-api-your_key_here
+ROBINHOOD_CRYPTO_PRIVATE_KEY=your_base64_private_key_here
+```
 
 ### 3. Install Dependencies
 ```bash
@@ -132,26 +143,28 @@ pip install -r requirements.txt
 ### 4. Execute Diagnostic & Portfolio Run
 ```bash
 python test_connection.py
-python portfolio_manager.py
+python portfolio_manager.py --branch full
 ```
 
 ---
 
 ## 📂 Repository Structure
 
-* 📂 **[`src/`](file:///c:/Users/danny/OneDrive/Desktop/my-first-project/src)**: Modular Python package (`config.py`, `ssot.py`, `macro_hedging.py`, `risk_manager.py`, `analysis_digest.py`).
-* 📊 **[PORTFOLIO_ANALYSIS.example.md](file:///c:/Users/danny/OneDrive/Desktop/my-first-project/PORTFOLIO_ANALYSIS.example.md)**: Sanitized template of auto-generated executive digest & analysis report.
-* 🎬 **[WALKTHROUGH.md](file:///c:/Users/danny/OneDrive/Desktop/my-first-project/WALKTHROUGH.md)**: System Architecture Diagram & step-by-step beginner guide.
-* 🧠 **[STRATEGY.md](file:///c:/Users/danny/OneDrive/Desktop/my-first-project/STRATEGY.md)**: Detailed trading strategy rules for Equities, Options, Crypto, and Event Markets.
-* 📖 **[USAGE_GUIDE.md](file:///c:/Users/danny/OneDrive/Desktop/my-first-project/USAGE_GUIDE.md)**: Non-technical showcase guide & schedule frequency rules.
-* 📄 **[portfolio_manager.py](file:///c:/Users/danny/OneDrive/Desktop/my-first-project/portfolio_manager.py)**: Single, unified entry point orchestrator script.
-* 📊 **[portfolio_dashboard.html](file:///c:/Users/danny/OneDrive/Desktop/my-first-project/portfolio_dashboard.html)**: Interactive visual dashboard.
-* 🧪 **[test_connection.py](file:///c:/Users/danny/OneDrive/Desktop/my-first-project/test_connection.py)**: 5-second diagnostic connection test script.
-* 📝 **[agent_journal.md](file:///c:/Users/danny/OneDrive/Desktop/my-first-project/agent_journal.md)**: Main chronological journal.
-* 📋 **[.env.example](file:///c:/Users/danny/OneDrive/Desktop/my-first-project/.env.example)**: Environment variable template file.
-* 📄 **[LICENSE](file:///c:/Users/danny/OneDrive/Desktop/my-first-project/LICENSE)**: Standard MIT Open Source License.
-* 📦 **[requirements.txt](file:///c:/Users/danny/OneDrive/Desktop/my-first-project/requirements.txt)**: Minimal required Python dependencies.
-* ⚙️ **[.gitignore](file:///c:/Users/danny/OneDrive/Desktop/my-first-project/.gitignore)**: Comprehensive ignore rules excluding temporary files and PII.
+* 📂 **[`src/`](src)**: Modular Python package (`config.py`, `ssot.py`, `macro_hedging.py`, `risk_manager.py`, `analysis_digest.py`, `crypto_client.py`).
+* ⏰ **[`SCHEDULE.md`](SCHEDULE.md)**: AGY `/schedule` prompts, session windows, and Robinhood feature optimization guide.
+* 📊 **[`PORTFOLIO_ANALYSIS.example.md`](PORTFOLIO_ANALYSIS.example.md)**: Sanitized template of auto-generated executive digest & analysis report.
+* 🎬 **[`WALKTHROUGH.md`](WALKTHROUGH.md)**: System Architecture Diagram & step-by-step walkthrough.
+* 🧠 **[`STRATEGY.md`](STRATEGY.md)**: Detailed trading strategy rules for Equities, Options, Crypto, and Event Markets.
+* 📖 **[`USAGE_GUIDE.md`](USAGE_GUIDE.md)**: Non-technical showcase guide & setup rules.
+* 📄 **[`portfolio_manager.py`](portfolio_manager.py)**: Single, unified entry point orchestrator script with `--branch` CLI support.
+* 📊 **[`portfolio_dashboard.html`](portfolio_dashboard.html)**: Interactive visual dashboard.
+* 🧪 **[`test_connection.py`](test_connection.py)**: 5-second diagnostic connection test script.
+* 🔑 **[`scripts/generate_crypto_keys.py`](scripts/generate_crypto_keys.py)**: Utility script for generating Robinhood Crypto Ed25519 keypairs.
+* 📝 **[`agent_journal.example.md`](agent_journal.example.md)**: Sample chronological agent journal.
+* 📋 **[`.env.example`](.env.example)**: Environment variable template file.
+* 📄 **[`LICENSE`](LICENSE)**: Standard MIT Open Source License.
+* 📦 **[`requirements.txt`](requirements.txt)**: Minimal required Python dependencies.
+* ⚙️ **[`.gitignore`](.gitignore)**: Comprehensive ignore rules excluding temporary files, logs, and PII.
 
 ---
 
