@@ -32,6 +32,36 @@ To enable live 24/7 cryptocurrency trading via the official **Robinhood Crypto R
 
 ---
 
+## 🏦 Robinhood Agentic Credit Card / Banking MCP Setup
+
+To enable the **Robinhood Banking MCP** for automated spending, virtual card management, and transaction history tracking:
+
+1. **Verify Endpoint & Local Config**:
+   Run the diagnostic script:
+   ```powershell
+   .venv\Scripts\python scripts/verify_banking_mcp.py
+   ```
+2. **MCP Client Link**:
+   The primary Streamable HTTP MCP URL is:
+   ```text
+   https://banking-agent.robinhood.com/mcp/banking
+   ```
+3. **Local MCP File (`mcp_config.json`)**:
+   ```json
+   {
+     "mcpServers": {
+       "robinhood-banking": {
+         "url": "https://banking-agent.robinhood.com/mcp/banking"
+       }
+     }
+   }
+   ```
+4. **Onboarding & Authentication**:
+   When connecting an agent for the first time, complete desktop OAuth onboarding to issue your agentic virtual card under your Robinhood Gold Card and establish spending controls (per-purchase approval or monthly limits).
+
+---
+
+
 ## ⏰ Execution Scheduling (AGY UI)
 
 For complete schedule options, copy-pasteable AGY `/schedule` prompts, and session window breakdowns, see [`SCHEDULE.md`](SCHEDULE.md).

@@ -20,8 +20,10 @@ This system takes full advantage of Robinhood’s industry-leading fintech innov
 4. 🛡️ **Agentic Sub-Accounts & Budget Sandboxing**: Operates safely inside a dedicated agentic sub-account (`...8015`) with push notifications and budget sandboxing, keeping primary wealth 100% air-gapped.
 5. 💵 **High-Yield Uninvested Cash Sweep**: Uninvested settled cash automatically earns top-tier APY interest in FDIC-insured partner banks while waiting for technical dip-buy signals.
 6. ⚖️ **Automated Risk Exposure & Rebalancing Engine**: Continuously evaluates capital concentration across the 3 core asset buckets (Equities, Options, Crypto) against the target 33.3% benchmark, alerting on allocation drift >10% and calculating cash reserve ratios.
+7. 💳 **Robinhood Agentic Credit Card / Banking MCP**: Integrates with the official Robinhood Banking MCP endpoint (`https://banking-agent.robinhood.com/mcp/banking`) for automated virtual card management, transaction tracking, and sandboxed spending rules under Robinhood Gold.
 
 ---
+
 
 ## 🏛️ System Architecture Diagram
 
