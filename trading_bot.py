@@ -418,7 +418,7 @@ class TradingBot:
             logger.info("Executing pre-trade simulation (review_equity_order)...")
             review_res = await session.call_tool("review_equity_order", arguments=review_args)
             review_data = json.loads(review_res.content[0].text)
-            logger.info(f"Pre-trade simulation review output: {json.dumps(review_data, indent=2)}")
+            logger.info("Pre-trade simulation review completed successfully.")
         except Exception as rev_err:
             logger.error(f"Pre-trade review failed: {rev_err}")
             if not self.dry_run:
@@ -489,7 +489,7 @@ class TradingBot:
             logger.info("Executing pre-trade simulation (review_equity_order)...")
             review_res = await session.call_tool("review_equity_order", arguments=review_args)
             review_data = json.loads(review_res.content[0].text)
-            logger.info(f"Pre-trade simulation review output: {json.dumps(review_data, indent=2)}")
+            logger.info("Pre-trade simulation review completed successfully.")
         except Exception as rev_err:
             logger.error(f"Pre-trade review failed: {rev_err}")
             if not self.dry_run:
