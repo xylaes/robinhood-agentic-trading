@@ -15,6 +15,7 @@ import uuid
 import logging
 import httpx
 from typing import Optional, Dict, Any, List
+from concurrent.futures import ThreadPoolExecutor
 
 logger = logging.getLogger("robinhood_crypto_client")
 
@@ -74,7 +75,13 @@ class RobinhoodCryptoClient:
             "Accept": "application/json"
         }
 
-    def _request(self, method: str, path: str, body_dict: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    def _request(
+        self,
+        method: str,
+        path: str,
+        body_dict: Optional[Dict[str, Any]] = None,
+        client: Optional[httpx.Client] = None
+    ) -> Dict[str, Any]:
         """Executes signed HTTP request to Robinhood Crypto API."""
         if not self.is_authenticated():
             return {
@@ -87,7 +94,7 @@ class RobinhoodCryptoClient:
         headers = self._generate_headers(method, path, body_str)
 
         try:
-            with httpx.Client(timeout=10.0) as client:
+            if client is not None:
                 response = client.request(
                     method=method.upper(),
                     url=url,
@@ -96,6 +103,16 @@ class RobinhoodCryptoClient:
                 )
                 response.raise_for_status()
                 return response.json()
+            else:
+                with httpx.Client(timeout=10.0) as local_client:
+                    response = local_client.request(
+                        method=method.upper(),
+                        url=url,
+                        headers=headers,
+                        content=body_str if body_str else None
+                    )
+                    response.raise_for_status()
+                    return response.json()
         except httpx.HTTPStatusError as e:
             logger.error(f"Robinhood Crypto API HTTP Error {e.response.status_code}: {e.response.text}")
             return {"error": str(e), "status_code": e.response.status_code, "detail": e.response.text}
@@ -125,26 +142,48 @@ class RobinhoodCryptoClient:
 
     def get_best_bid_ask(self, symbols: List[str]) -> Dict[str, Any]:
         """Fetches best bid and ask quotes for crypto symbols (e.g. ['BTC-USD', 'ETH-USD'])."""
-        results = []
-        for symbol in symbols:
+        if not symbols:
+            return {"results": []}
+
+        def fetch_quote(symbol: str, client: httpx.Client) -> List[Dict[str, Any]]:
             path = f"/api/v1/crypto/marketdata/best_bid_ask/?symbol={symbol.upper()}"
             if not self.is_authenticated():
                 try:
-                    with httpx.Client(timeout=5.0) as client:
-                        res = client.get(f"{self.BASE_URL}{path}")
-                        if res.status_code == 200:
-                            data = res.json()
-                            if "results" in data:
-                                results.extend(data["results"])
+                    res = client.get(f"{self.BASE_URL}{path}")
+                    if res.status_code == 200:
+                        data = res.json()
+                        if "results" in data:
+                            return data["results"]
                 except Exception as e:
                     logger.warning(f"Public crypto quote fetch warning for {symbol}: {e}")
             else:
-                data = self._request("GET", path)
+                data = self._request("GET", path, client=client)
                 if isinstance(data, dict) and "results" in data:
-                    results.extend(data["results"])
+                    return data["results"]
+            return []
+
+        max_workers = min(10, max(1, len(symbols)))
+        results_by_symbol = {}
+
+        with httpx.Client(timeout=5.0) as client:
+            with ThreadPoolExecutor(max_workers=max_workers) as executor:
+                futures = {
+                    executor.submit(fetch_quote, symbol, client): symbol
+                    for symbol in symbols
+                }
+                for future in futures:
+                    symbol = futures[future]
+                    try:
+                        results_by_symbol[symbol] = future.result()
+                    except Exception as e:
+                        logger.warning(f"Error fetching quote for {symbol}: {e}")
+                        results_by_symbol[symbol] = []
+
+        results = []
+        for symbol in symbols:
+            results.extend(results_by_symbol.get(symbol, []))
 
         return {"results": results}
-
 
     def place_order(
         self,
