@@ -19,23 +19,23 @@ class PortfolioDigestGenerator:
 
         timestamp = results.get("timestamp", datetime.datetime.utcnow().isoformat())
         edt_time_str = datetime.datetime.now().strftime("%Y-%m-%d (%H:%M EDT)")
-        account_num = results.get("account_number", "AgenticAccount")
+        account_num = results.get("account_number", "AgenticAccount") or "AgenticAccount"
 
-        portfolio_data = results.get("portfolio", {}).get("data", {})
+        portfolio_data = (results.get("portfolio") or {}).get("data") or {}
         total_val = float(portfolio_data.get("total_value", 0) or portfolio_data.get("equity", 0) or 0)
         cash_val = float(portfolio_data.get("cash", 0) or 0)
-        buying_power = float(portfolio_data.get("buying_power", {}).get("buying_power", 0) or 0)
+        buying_power = float((portfolio_data.get("buying_power") or {}).get("buying_power", 0) or 0)
         equity_val = float(portfolio_data.get("equity_value", 0) or 0)
 
-        risk_data = results.get("risk_and_rebalance", {})
-        allocations = risk_data.get("current_allocations_pct", {})
-        drifts = risk_data.get("allocation_drifts_pct", {})
-        scaling = risk_data.get("dynamic_scaling_parameters", {})
-        rebalance_actions = risk_data.get("rebalance_actions", [])
+        risk_data = results.get("risk_and_rebalance") or {}
+        allocations = risk_data.get("current_allocations_pct") or {}
+        drifts = risk_data.get("allocation_drifts_pct") or {}
+        scaling = risk_data.get("dynamic_scaling_parameters") or {}
+        rebalance_actions = risk_data.get("rebalance_actions") or []
 
-        ssot = results.get("github_ssot", {})
-        commit_hash = ssot.get("commit", "N/A")[:8]
-        branch_name = ssot.get("branch", "main")
+        ssot = results.get("github_ssot") or {}
+        commit_hash = (ssot.get("commit") or "N/A")[:8]
+        branch_name = ssot.get("branch") or "main"
 
         md_content = f"""# 📊 Executive Portfolio Digest & Analysis Report
 
