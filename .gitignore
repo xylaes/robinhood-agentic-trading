@@ -26,6 +26,9 @@ PORTFOLIO_ANALYSIS.md
 !src/
 !src/*.py
 !src/**/*.py
+!tests/
+!tests/*.py
+!tests/**/*.py
 
 # Miscellaneous Local Scratch Assets & Markdown Files
 *.sql
