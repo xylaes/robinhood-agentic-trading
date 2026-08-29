@@ -352,20 +352,33 @@ class TradingBot:
                     await self.sell_position(session, symbol, pos["quantity"], curr_price, "take_profit", avg_cost)
 
         # 6. Evaluate watchlisted assets for signals and execute buys/sells
+        start_time = (datetime.datetime.utcnow() - datetime.timedelta(days=15)).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+        async def fetch_symbol_historicals(symbol):
+            try:
+                hist_res = await session.call_tool("get_equity_historicals", arguments={
+                    "symbols": [symbol],
+                    "start_time": start_time,
+                    "interval": "hour"
+                })
+                hist_data = json.loads(hist_res.content[0].text)["data"]["results"]
+                if not hist_data or not hist_data[0].get("bars"):
+                    logger.warning(f"Could not retrieve historical bars for {symbol}")
+                    return symbol, None
+                return symbol, hist_data[0]["bars"]
+            except Exception as e:
+                logger.error(f"Error fetching historicals for {symbol}: {e}")
+                return symbol, None
+
+        historicals_results = await asyncio.gather(*[fetch_symbol_historicals(s) for s in active_watchlist])
+        historicals_map = dict(historicals_results)
+
         for symbol in active_watchlist:
-            # Check historicals to compute signals
-            start_time = (datetime.datetime.utcnow() - datetime.timedelta(days=15)).strftime("%Y-%m-%dT%H:%M:%SZ")
-            hist_res = await session.call_tool("get_equity_historicals", arguments={
-                "symbols": [symbol],
-                "start_time": start_time,
-                "interval": "hour"
-            })
-            hist_data = json.loads(hist_res.content[0].text)["data"]["results"]
-            if not hist_data or not hist_data[0].get("bars"):
-                logger.warning(f"Could not retrieve historical bars for {symbol}")
+            bars = historicals_map.get(symbol)
+            if not bars:
                 continue
-                
-            df = self.compute_indicators(hist_data[0]["bars"])
+
+            df = self.compute_indicators(bars)
             signal, price, rsi, ema_diff = self.evaluate_signals(df)
             
             logger.info(f"Asset: {symbol} | Price: ${price:.2f} | RSI: {rsi:.2f} | Signal: {signal.upper()}")
