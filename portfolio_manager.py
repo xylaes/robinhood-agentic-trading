@@ -81,7 +81,7 @@ async def run_portfolio_cycle(target_branch: str = "full"):
     command = "npx.cmd" if sys.platform == "win32" else "npx"
     server_params = StdioServerParameters(
         command=command,
-        args=["-y", "mcp-remote", "https://agent.robinhood.com/mcp/trading"]
+        args=["-y", "mcp-remote@0.1.38", "https://agent.robinhood.com/mcp/trading"]
     )
 
     cycle_time = datetime.datetime.now(datetime.timezone.utc).isoformat()
