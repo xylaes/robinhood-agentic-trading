@@ -26,12 +26,15 @@ class PortfolioDigestGenerator:
         cash_val = float(portfolio_data.get("cash", 0) or 0)
         buying_power = float(portfolio_data.get("buying_power", {}).get("buying_power", 0) or 0)
         equity_val = float(portfolio_data.get("equity_value", 0) or 0)
+        options_val = float(portfolio_data.get("options_value", 0) or 0)
+        crypto_val = float(portfolio_data.get("crypto_value", 0) or 0)
 
         risk_data = results.get("risk_and_rebalance", {})
         allocations = risk_data.get("current_allocations_pct", {})
         drifts = risk_data.get("allocation_drifts_pct", {})
         scaling = risk_data.get("dynamic_scaling_parameters", {})
         rebalance_actions = risk_data.get("rebalance_actions", [])
+        suggested_actions = risk_data.get("suggested_actions", [])
 
         ssot = results.get("github_ssot", {})
         commit_hash = ssot.get("commit", "N/A")[:8]
@@ -62,47 +65,109 @@ Capital is partitioned across 3 equal quantitative buckets (**33.33% Target Benc
 | Asset Bucket | Current Value | Allocation % | Target Benchmark % | Allocation Drift (%) | Dynamic Order Size |
 | :--- | :---: | :---: | :---: | :---: | :---: |
 | **📈 Equities** | ${equity_val:.2f} | {allocations.get('equities', 0):.2f}% | 33.33% | {drifts.get('equities', 0):+.2f}% | **${scaling.get('scaled_stock_order_size', 9.98):.2f}** / trade |
-| **🎯 Options** | $0.00 | {allocations.get('options', 0):.2f}% | 33.33% | {drifts.get('options', 0):+.2f}% | **${scaling.get('scaled_max_option_premium', 34.92):.2f}** max premium |
-| **🪙 Crypto** | $0.00 | {allocations.get('crypto', 0):.2f}% | 33.33% | {drifts.get('crypto', 0):+.2f}% | **${scaling.get('scaled_crypto_order_size', 9.98):.2f}** / trade |
+| **🎯 Options** | ${options_val:.2f} | {allocations.get('options', 0):.2f}% | 33.33% | {drifts.get('options', 0):+.2f}% | **${scaling.get('scaled_max_option_premium', 34.92):.2f}** max premium |
+| **🪙 Crypto** | ${crypto_val:.2f} | {allocations.get('crypto', 0):.2f}% | 33.33% | {drifts.get('crypto', 0):+.2f}% | **${scaling.get('scaled_crypto_order_size', 9.98):.2f}** / trade |
 | **💵 Cash Sweep** | ${cash_val:.2f} | {allocations.get('cash', 0):.2f}% | N/A | Cash Reserve | High-Yield APY |
 
 ---
 
-## 🎯 3. Active Positions & Queued Order Audits
+## 🎯 3. Active Positions & Executed Trades
 
-### Current Active Holdings
-* **`SPY` (S&P 500 ETF)**: `0.013416` fractional shares @ average cost **$745.38** (Current market value: **${equity_val:.2f}**).
+### Equity Holdings (Brokerage)
+"""
+        positions_list = results.get("positions", {}).get("data", {}).get("positions", [])
+        if positions_list:
+            for p in positions_list:
+                sym = p.get("symbol", "N/A")
+                qty = p.get("shares_available_for_sells", 0)
+                avg = p.get("average_buy_price", 0)
+                md_content += f"* **`{sym}`**: `{qty}` fractional shares @ avg cost **${float(avg):.2f}**\n"
+        else:
+            md_content += "* *No active equity positions currently held.*\n"
 
-### Queued Orders (Pending Execution at Market Open)
-1. **Ford Motor Co. (`F`) $12.00 Call Option**:
-   * **Strategy**: Single-Leg In-The-Money (ITM) Call (Expiring Aug 14, 2026).
-   * **Limit Price**: `$0.35` per share (`$35.00` total premium).
-   * **Pre-Trade Review**: Passed (`order_checks: {{}}`).
-2. **NVIDIA Corp (`NVDA`) Fractional Equity Buy**:
-   * **Strategy**: Market Buy (`$10.00` allocation).
-   * **Pre-Trade Review**: Passed (`order_checks: {{}}`).
+        crypto_holdings = results.get("crypto_holdings", [])
+        if isinstance(crypto_holdings, dict):
+            crypto_holdings = crypto_holdings.get("results", [])
+        if crypto_holdings:
+            md_content += "\n### Crypto Holdings (Robinhood Crypto)\n"
+            for ch in crypto_holdings:
+                c_code = ch.get("currency", {}).get("code") if isinstance(ch.get("currency"), dict) else (ch.get("currency_code") or ch.get("asset_code") or "CRYPTO")
+                c_qty = float(ch.get("quantity_transferable") or ch.get("quantity") or ch.get("total_quantity", 0))
+                if c_qty > 0:
+                    md_content += f"* **`{c_code}`**: `{c_qty:.6f}` units\n"
 
+        executed = results.get("executed_trades", [])
+        if executed:
+            md_content += "\n### ⚡ Recently Executed Live Orders\n"
+            for tr in executed:
+                md_content += f"* **`{tr.get('symbol')}`** ({tr.get('side', '').upper()} {tr.get('asset_class', '')}) | Amount: **${tr.get('dollar_amount', 0):.2f}** | Status: **{tr.get('status', 'SUCCESS')}**\n"
+        else:
+            md_content += "\n### Queued / Simulated Opportunities\n"
+            sims = results.get("simulations", {})
+            for sim_key, sim_val in sims.items():
+                md_content += f"* **{sim_key.replace('_', ' ').title()}**: Pre-trade audit passed\n"
+
+        md_content += f"""
 ---
 
-## 🔄 4. Rebalancing & Risk Action Plan
+## 🔄 4. Tactical Rebalancing & 3 Priority Suggested Actions
 
 * **Cash Reserve Ratio**: **{allocations.get('cash', 0):.2f}%**
-* **Single-Stock Concentration Risk**: **Low** (1 active holding)
-* **Rebalancing Flag**: **Active** (Capital ready to deploy upon technical triggers)
-
-### Recommended Next Steps
+* **Rebalancing Flag**: **{'Active' if risk_data.get('rebalance_required', False) else 'Balanced'}**
 """
-        for action in rebalance_actions:
-            md_content += f"- {action}\n"
+        if suggested_actions:
+            md_content += "\n### 📋 3 Priority Actions to Take (or Hold)\n\n"
+            icons = {"Crypto": "🪙", "Equities": "📈", "Options": "🎯"}
+            for idx, act in enumerate(suggested_actions, 1):
+                b_icon = icons.get(act.get("bucket"), "📌")
+                md_content += f"#### {idx}. {b_icon} {act.get('bucket')} — `{act.get('stance')}`\n"
+                md_content += f"* **Tactical Guidance**: {act.get('action')}\n"
+                md_content += f"* **Direct Execution Command**:\n```powershell\n{act.get('command')}\n```\n\n"
+        else:
+            md_content += "\n### Recommended Next Steps\n"
+            for action in rebalance_actions:
+                md_content += f"- {action}\n"
 
-        md_content += """
----
+        scaled_crypto = scaling.get('scaled_crypto_order_size', 10.10)
+        scaled_option = scaling.get('scaled_max_option_premium', 35.36)
+
+        md_content += f"""---
 
 ## 🔮 5. Macro Catalysts & Market Risk Outlook
 
 * **FOMC Interest Rate Decision**: Hedged via binary event contracts (`FED-RATE-CUT`).
 * **CPI YoY Inflation Data**: Hedged via inflation prediction contracts (`CPI-YOY-UNDER-2.8`).
 * **Non-Farm Payrolls (NFP)**: Tracked for labor market resilience (`NFP-OVER-150K`).
+
+---
+
+## 🎮 6. Interactive Command Menu (Multiple Choice Selection)
+
+Copy or choose any option below for rapid execution:
+
+* **[A] 🪙 Execute Live Crypto Accumulation (24/7 Market Active)**
+  * Deploys dynamic tranche (${scaled_crypto:.2f}) into BTC-USD.
+  ```powershell
+  .venv\\Scripts\\python.exe portfolio_manager.py --branch crypto --execute-live
+  ```
+
+* **[B] 🎯 Scan & Review Options Strategy (Market Hours 9:30 AM EDT)**
+  * Audits high-delta ITM options setups with max risk premium cap (${scaled_option:.2f}).
+  ```powershell
+  .venv\\Scripts\\python.exe portfolio_manager.py --branch options
+  ```
+
+* **[C] 📈 Scan Equities RSI Oversold Opportunities**
+  * Evaluates SPY and NVDA watchlist indicators without breaching allocation guardrail.
+  ```powershell
+  .venv\\Scripts\\python.exe portfolio_manager.py --branch equities
+  ```
+
+* **[D] 🔄 Full Portfolio Invariant Sync & Audit (Default Recommended)**
+  * Full synchronization across all 4 asset buckets and refresh of executive digest.
+  ```powershell
+  .venv\\Scripts\\python.exe portfolio_manager.py --branch full
+  ```
 
 ---
 

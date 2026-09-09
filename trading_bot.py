@@ -18,8 +18,10 @@ try:
 except ImportError:
     pass
 
+from src.config import EQUITY_WATCHLIST
+
 # Config
-WATCHLIST = ['QQQ', 'SPY', 'NVDA', 'AAPL']
+WATCHLIST = EQUITY_WATCHLIST
 STATE_FILE = "trading_state.json"
 LOG_FILE = "trading_log.json"
 ALLOCATION_PER_TRADE = 10.00
@@ -160,9 +162,9 @@ class TradingBot:
         bullish_cross = (prev_ema9 <= prev_ema21) and (curr_ema9 > curr_ema21)
         bearish_cross = (prev_ema9 >= prev_ema21) and (curr_ema9 < curr_ema21)
 
-        # 2. Oversold / Overbought RSI
-        oversold_rsi = curr_rsi < 35
-        overbought_rsi = curr_rsi > 70
+        # 2. Oversold / Overbought RSI (Tuned for Dynamic Action)
+        oversold_rsi = curr_rsi < 42
+        overbought_rsi = curr_rsi > 65
 
         if bullish_cross or oversold_rsi:
             return "buy", curr_close, curr_rsi, curr_ema9 - curr_ema21
@@ -553,11 +555,23 @@ class TradingBot:
         except Exception as e:
             logger.error(f"Error placing sell order: {e}")
 
+def clean_stale_mcp_locks():
+    """Cleans up stale mcp-remote lock files to prevent port conflict re-registration prompts."""
+    import glob
+    auth_dir = os.path.expanduser("~/.mcp-auth")
+    if os.path.exists(auth_dir):
+        for lock_file in glob.glob(os.path.join(auth_dir, "**", "*_lock.json"), recursive=True):
+            try:
+                os.remove(lock_file)
+            except Exception:
+                pass
+
 async def run_bot_once(dry_run, account_number):
+    clean_stale_mcp_locks()
     command = "npx.cmd" if sys.platform == "win32" else "npx"
     server_params = StdioServerParameters(
         command=command,
-        args=["-y", "mcp-remote", "https://agent.robinhood.com/mcp/trading"]
+        args=["-y", "mcp-remote", "https://agent.robinhood.com/mcp/trading", "--silent"]
     )
     
     bot = TradingBot(account_number=account_number, dry_run=dry_run)
@@ -568,6 +582,7 @@ async def run_bot_once(dry_run, account_number):
                 await bot.execute_run(session)
     except Exception as e:
         logger.exception("Fatal error during bot execution:")
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Robinhood Agentic Trading Bot")

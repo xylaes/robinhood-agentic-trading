@@ -12,12 +12,14 @@ TARGET_ALLOCATION_PCT = {
 # Risk Boundaries & Tolerances
 DRIFT_TOLERANCE_PCT = 10.0  # Alert & trigger rebalancing if bucket strays > 10%
 
-# Strategy Watchlists
-EQUITY_WATCHLIST = ["NVDA", "SPY", "QQQ", "AAPL"]
-CRYPTO_WATCHLIST = ["BTC-USD", "ETH-USD", "SOL-USD", "DOGE-USD"]
+# Strategy Watchlists (Expanded for Active Dynamic Opportunities)
+EQUITY_WATCHLIST = ["NVDA", "TSLA", "AMD", "PLTR", "SPY", "QQQ", "AAPL", "COIN", "MSFT", "AMZN"]
+CRYPTO_WATCHLIST = ["BTC-USD", "ETH-USD", "SOL-USD", "DOGE-USD", "AVAX-USD"]
 
-# Robinhood Crypto API Endpoint Config
+# Robinhood Crypto & Banking API / MCP Endpoint Configs
 ROBINHOOD_CRYPTO_BASE_URL = "https://trading.robinhood.com"
+ROBINHOOD_BANKING_MCP_URL = "https://banking-agent.robinhood.com/mcp/banking"
+
 
 
 # Dynamic Capital Scaling Functions

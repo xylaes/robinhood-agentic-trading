@@ -15,7 +15,9 @@ An institutional-grade, multi-asset autonomous AI portfolio management system bu
 This system takes full advantage of Robinhood’s industry-leading fintech innovations:
 
 1. 🌙 **24-Hour Market (24/5 Equities & ETF Trading)**: Executes extended hours limit orders (`market_hours="extended_hours"`) via Blue Ocean ATS from Sunday 8:00 PM EST to Friday 8:00 PM EST to capitalize on earnings reports and Asian market opens.
-2. 🪙 **24/7 Robinhood Crypto REST API Trading**: Operates continuous 365 days/year Ed25519-authenticated crypto market data queries and order execution (`src/crypto_client.py`) for `BTC-USD`, `ETH-USD`, `SOL-USD`, and `DOGE-USD`.
+2. 🪙 **Dual-Engine 24/7 Robinhood Crypto Trading**:
+   - **Engine A (Native Robinhood MCP Gateway - Primary)**: Directly integrates with agentic crypto account `...1542` (linked to `...8015`) using `get_crypto_quotes`, `get_crypto_positions`, `preview_crypto_order`, and `place_crypto_order`.
+   - **Engine B (Standalone REST API Client - Fallback / Zero-Token Cost)**: Keeps `ROBINHOOD_CRYPTO_API_KEY` and `ROBINHOOD_CRYPTO_PRIVATE_KEY` (Ed25519) in [`src/crypto_client.py`](src/crypto_client.py) with automatic server clock-skew compensation, allowing headless execution outside LLM context loops whenever token conservation is desired.
 3. 🎯 **Event Contracts & Prediction Markets (via Kalshi)**: Uses binary $0.01 – $0.99 macro contracts (Fed interest rates, CPI inflation data) to hedge equity positions, tracked via `get_pnl_trade_history`.
 4. 🛡️ **Agentic Sub-Accounts & Budget Sandboxing**: Operates safely inside a dedicated agentic sub-account (`...8015`) with push notifications and budget sandboxing, keeping primary wealth 100% air-gapped.
 5. 💵 **High-Yield Uninvested Cash Sweep**: Uninvested settled cash automatically earns top-tier APY interest in FDIC-insured partner banks while waiting for technical dip-buy signals.

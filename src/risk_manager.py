@@ -54,16 +54,95 @@ class PortfolioRiskAndRebalanceManager:
         crypto_order_size = SizingEngine.get_crypto_order_size(base_val, buying_power)
         max_option_premium = SizingEngine.get_max_option_premium(base_val)
 
-        rebalance_actions = []
-        if current_pcts["crypto"] < 10.0 and buying_power >= 5.0:
-            rebalance_actions.append(f"Deploy cash reserves (${buying_power:.2f} available) to accumulate Crypto dip-buys (${crypto_order_size:.2f} per order) up to ${target_dollars['crypto']:.2f} target.")
-        if current_pcts["options"] < 10.0 and buying_power >= 15.0:
-            rebalance_actions.append(f"Execute high-delta ITM Call options strategy (max premium cap ${max_option_premium:.2f}) up to ${target_dollars['options']:.2f} target.")
-        if current_pcts["equities"] < 20.0 and buying_power >= 5.0:
-            rebalance_actions.append(f"Accumulate fractional shares (${stock_order_size:.2f} per order) of NVDA / SPY on 1-hr RSI oversold dips up to ${target_dollars['equities']:.2f} target.")
+        # Dynamic candidate action generation across all asset categories
+        candidates = []
 
-        if not rebalance_actions:
-            rebalance_actions.append("Portfolio is optimally balanced within risk parameters.")
+        # Candidate A: Crypto Dip Accumulation (24/7 Market)
+        if current_pcts["crypto"] < (TARGET_ALLOCATION_PCT["crypto"] - DRIFT_TOLERANCE_PCT) and buying_power >= 5.0:
+            candidates.append({
+                "bucket": "Crypto",
+                "stance": "ACCUMULATE (24/7 Market Active)",
+                "action": f"Deploy uninvested cash (${buying_power:.2f} available) into BTC-USD tranche (${crypto_order_size:.2f}) to close {drifts['crypto']:.2f}% drift.",
+                "command": ".venv\\Scripts\\python.exe portfolio_manager.py --branch crypto --execute-live",
+                "priority": 95
+            })
+            # Secondary crypto diversification candidate if buying power allows multiple tranches
+            if buying_power >= (crypto_order_size * 2):
+                candidates.append({
+                    "bucket": "Crypto",
+                    "stance": "ACCUMULATE (Diversification)",
+                    "action": f"Accumulate secondary crypto tranche in ETH/SOL (${crypto_order_size:.2f}) to accelerate rebalancing toward ${target_dollars['crypto']:.2f}.",
+                    "command": ".venv\\Scripts\\python.exe portfolio_manager.py --branch crypto --execute-live",
+                    "priority": 85
+                })
+        else:
+            candidates.append({
+                "bucket": "Crypto",
+                "stance": "HOLD",
+                "action": f"Maintain existing Crypto holdings (${crypto_val:.2f}, {current_pcts['crypto']:.2f}%). Allocation is within drift tolerance.",
+                "command": ".venv\\Scripts\\python.exe portfolio_manager.py --branch crypto",
+                "priority": 40
+            })
+
+        # Candidate B: Equities Opportunity / Risk Guardrail
+        if current_pcts["equities"] > (TARGET_ALLOCATION_PCT["equities"] + DRIFT_TOLERANCE_PCT):
+            candidates.append({
+                "bucket": "Equities",
+                "stance": "HOLD (Overweight Guardrail Active)",
+                "action": f"Hold existing equity positions ($92.70, {current_pcts['equities']:.2f}%). Over target by +{drifts['equities']:.2f}%; guardrail safely prevents over-concentration.",
+                "command": ".venv\\Scripts\\python.exe portfolio_manager.py --branch equities",
+                "priority": 90
+            })
+        elif buying_power >= 5.0 and current_pcts["equities"] < (TARGET_ALLOCATION_PCT["equities"] - DRIFT_TOLERANCE_PCT):
+            candidates.append({
+                "bucket": "Equities",
+                "stance": "ACCUMULATE ON DIP",
+                "action": f"Accumulate fractional NVDA / SPY (${stock_order_size:.2f}) on 1-hr RSI oversold signals up to ${target_dollars['equities']:.2f} target.",
+                "command": ".venv\\Scripts\\python.exe portfolio_manager.py --branch equities --execute-live",
+                "priority": 88
+            })
+        else:
+            candidates.append({
+                "bucket": "Equities",
+                "stance": "HOLD",
+                "action": f"Maintain current equity holdings (${equity_val:.2f}, {current_pcts['equities']:.2f}%). Capital is prioritized for rebalancing under-allocated buckets.",
+                "command": ".venv\\Scripts\\python.exe portfolio_manager.py --branch equities",
+                "priority": 50
+            })
+
+        # Candidate C: Options Defined-Risk Strategy
+        if current_pcts["options"] < (TARGET_ALLOCATION_PCT["options"] - DRIFT_TOLERANCE_PCT) and buying_power >= 15.0:
+            candidates.append({
+                "bucket": "Options",
+                "stance": "QUEUE / SCAN (Market Hours 9:30 AM EDT)",
+                "action": f"Scan high-delta ITM Call options strategy (max premium cap ${max_option_premium:.2f}) up to ${target_dollars['options']:.2f} target during regular trading hours.",
+                "command": ".venv\\Scripts\\python.exe portfolio_manager.py --branch options",
+                "priority": 80
+            })
+        else:
+            candidates.append({
+                "bucket": "Options",
+                "stance": "HOLD / PRESERVE CASH",
+                "action": f"Preserve uninvested cash in Robinhood sweep earning high-yield APY interest while monitoring for high-probability setups.",
+                "command": ".venv\\Scripts\\python.exe portfolio_manager.py --branch options",
+                "priority": 45
+            })
+
+        # Candidate D: Cash Sweep APY Reserve
+        if current_pcts["cash"] > 30.0:
+            candidates.append({
+                "bucket": "Cash",
+                "stance": "YIELD HARVEST",
+                "action": f"Earning interest on uninvested cash reserve (${cash_val:.2f}, {current_pcts['cash']:.2f}%) while waiting for high-conviction dip entries.",
+                "command": ".venv\\Scripts\\python.exe portfolio_manager.py --branch full",
+                "priority": 60
+            })
+
+        # Rank candidates by priority score descending and take top 3
+        candidates.sort(key=lambda x: x["priority"], reverse=True)
+        suggested_actions = candidates[:3]
+
+        rebalance_actions = [f"[{act['bucket']} - {act['stance']}] {act['action']}" for act in suggested_actions]
 
         positions_list = positions_data.get("data", {}).get("positions", [])
         active_positions = [p for p in positions_list if float(p.get("quantity", 0)) > 0]
@@ -79,6 +158,7 @@ class PortfolioRiskAndRebalanceManager:
             "drift_tolerance_pct": DRIFT_TOLERANCE_PCT,
             "rebalance_required": rebalance_required,
             "rebalance_actions": rebalance_actions,
+            "suggested_actions": suggested_actions,
             "dynamic_scaling_parameters": {
                 "scaled_stock_order_size": stock_order_size,
                 "scaled_crypto_order_size": crypto_order_size,

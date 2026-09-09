@@ -1,10 +1,16 @@
 """
 Robinhood Crypto Trading API Client.
 
-Provides direct access to Robinhood's official Crypto Trading REST API
-(https://trading.robinhood.com/api/v1/crypto/) using API Key + Ed25519 signature authentication.
+Dual Architecture Note:
+1. Native MCP Trading Gateway (Primary):
+   - Handled via `robinhood-trading` MCP tools (`get_crypto_quotes`, `get_crypto_positions`,
+     `preview_crypto_order`, `place_crypto_order`) linked to agentic account ...8015.
+   - Ideal for agentic workflows with automatic token lifecycle management.
 
-Supports dry-run fallback when credentials are not configured or explicitly disabled.
+2. Direct REST API Client (Fallback & Cost-Optimized Standalone):
+   - Uses `ROBINHOOD_CRYPTO_API_KEY` and `ROBINHOOD_CRYPTO_PRIVATE_KEY` (Ed25519 signature authentication).
+   - Retained for zero-token-overhead automation, high-frequency cron loops, or independent execution.
+   - Includes automatic server clock skew compensation to prevent "Timestamp is invalid" errors.
 """
 
 import os
@@ -13,6 +19,7 @@ import json
 import base64
 import uuid
 import logging
+import email.utils
 import httpx
 from typing import Optional, Dict, Any, List
 
@@ -178,11 +185,24 @@ class RobinhoodCryptoClient:
 
         if order_type.lower() == "market":
             config = {}
-            if dollar_amount is not None:
-                config["dollar_amount"] = f"{dollar_amount:.2f}"
-            elif asset_quantity is not None:
+            if asset_quantity is None and dollar_amount is not None:
+                try:
+                    quotes = self.get_best_bid_ask([symbol])
+                    if quotes and "results" in quotes and quotes["results"]:
+                        price = float(quotes["results"][0].get("price", 0) or quotes["results"][0].get("ask_inclusive_of_buy_spread", 0) or 0)
+                        if price > 0:
+                            asset_quantity = round(dollar_amount / price, 8)
+                except Exception as e:
+                    logger.warning(f"Could not resolve asset quantity for {symbol}: {e}")
+
+            if asset_quantity is not None:
                 config["asset_quantity"] = f"{asset_quantity:.8f}"
+
+            elif dollar_amount is not None:
+                config["dollar_amount"] = f"{dollar_amount:.2f}"
+
             payload["market_order_config"] = config
+
         elif order_type.lower() == "limit":
             config = {
                 "time_in_force": "gtc"
@@ -192,6 +212,7 @@ class RobinhoodCryptoClient:
             if limit_price is not None:
                 config["limit_price"] = f"{limit_price:.2f}"
             payload["limit_order_config"] = config
+
 
         if dry_run or self.dry_run or not self.is_authenticated():
             logger.info(f"[CRYPTO SIMULATION] {side.upper()} {symbol} | Type: {order_type} | USD: ${dollar_amount} | Qty: {asset_quantity}")
