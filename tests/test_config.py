@@ -57,3 +57,26 @@ def test_get_bucket_targets_structure_and_rounding():
     assert targets["equities"] == expected_val
     assert targets["options"] == expected_val
     assert targets["crypto"] == expected_val
+
+
+def test_get_max_option_premium_minimum_cap():
+    """Test that get_max_option_premium returns minimum cap of 15.00 for low or negative net worth."""
+    assert SizingEngine.get_max_option_premium(0.0) == 15.00
+    assert SizingEngine.get_max_option_premium(-500.0) == 15.00
+    assert SizingEngine.get_max_option_premium(10.0) == 15.00
+    assert SizingEngine.get_max_option_premium(64.28) == 15.00
+
+
+def test_get_max_option_premium_calculation_and_precision():
+    """Test get_max_option_premium dynamic sizing calculation and return type/rounding."""
+    # net_worth = 1000.0 -> bucket_target = 333.3 -> round(333.3 * 0.70, 2) = 233.31
+    premium_1000 = SizingEngine.get_max_option_premium(1000.0)
+    assert premium_1000 == 233.31
+    assert isinstance(premium_1000, float)
+
+    # net_worth = 10000.0 -> bucket_target = 3333.0 -> round(3333.0 * 0.70, 2) = 2333.10
+    assert SizingEngine.get_max_option_premium(10000.0) == 2333.10
+
+    # Test boundary above minimum cap threshold (e.g. 65.0)
+    # 65.0 * 0.3333 = 21.6645 -> 21.6645 * 0.70 = 15.16515 -> round = 15.17
+    assert SizingEngine.get_max_option_premium(65.0) == 15.17
