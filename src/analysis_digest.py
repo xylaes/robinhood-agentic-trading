@@ -31,6 +31,7 @@ class PortfolioDigestGenerator:
 
         risk_data = results.get("risk_and_rebalance", {})
         allocations = risk_data.get("current_allocations_pct", {})
+        target_allocs = risk_data.get("target_allocation_pct", {"equities": 60.0, "crypto": 40.0, "options": 0.0})
         drifts = risk_data.get("allocation_drifts_pct", {})
         scaling = risk_data.get("dynamic_scaling_parameters", {})
         rebalance_actions = risk_data.get("rebalance_actions", [])
@@ -39,6 +40,9 @@ class PortfolioDigestGenerator:
         ssot = results.get("github_ssot", {})
         commit_hash = ssot.get("commit", "N/A")[:8]
         branch_name = ssot.get("branch", "main")
+
+        opt_target_label = f"{target_allocs.get('options', 0.0):.2f}%" if total_val >= 500 else "0.00% (Dormant <$500)"
+        opt_size_label = f"**${scaling.get('scaled_max_option_premium', 0):.2f}** max premium" if total_val >= 500 else "Dormant (<$500)"
 
         md_content = f"""# 📊 Executive Portfolio Digest & Analysis Report
 
@@ -54,19 +58,19 @@ class PortfolioDigestGenerator:
 * 🛡️ **Regulatory Safeguards**: **100% Active** (FINRA Rule 4210 PDT, SEC Reg T GFV, IRS Wash-Sale safeguards)
 
 ### Plain-English Summary
-The Robinhood Agentic Portfolio is operating normally with **${buying_power:.2f}** in spendable buying power. Settled cash is held in Robinhood's high-yield sweep reserve earning competitive APY interest while awaiting technical dip-buy signals across Equities, Options, and Crypto.
+The Robinhood Agentic Portfolio is operating normally with **${buying_power:.2f}** in spendable buying power. Settled cash is held in Robinhood's high-yield sweep reserve earning competitive APY interest while awaiting technical dip-buy signals across Equities and Crypto.
 
 ---
 
 ## ⚖️ 2. Asset Bucket Allocations & Dynamic Capital Sizing
 
-Capital is partitioned across 3 equal quantitative buckets (**33.33% Target Benchmark**). Position sizing dynamically scales based on live account net worth (**${total_val:.2f}**):
+Capital is partitioned across quantitative buckets ({target_allocs.get('equities', 60.0):.1f}% Equities / {target_allocs.get('crypto', 40.0):.1f}% Crypto Target Benchmark; Options dormant under $500). Position sizing dynamically scales based on live account net worth (**${total_val:.2f}**):
 
 | Asset Bucket | Current Value | Allocation % | Target Benchmark % | Allocation Drift (%) | Dynamic Order Size |
 | :--- | :---: | :---: | :---: | :---: | :---: |
-| **📈 Equities** | ${equity_val:.2f} | {allocations.get('equities', 0):.2f}% | 33.33% | {drifts.get('equities', 0):+.2f}% | **${scaling.get('scaled_stock_order_size', 9.98):.2f}** / trade |
-| **🎯 Options** | ${options_val:.2f} | {allocations.get('options', 0):.2f}% | 33.33% | {drifts.get('options', 0):+.2f}% | **${scaling.get('scaled_max_option_premium', 34.92):.2f}** max premium |
-| **🪙 Crypto** | ${crypto_val:.2f} | {allocations.get('crypto', 0):.2f}% | 33.33% | {drifts.get('crypto', 0):+.2f}% | **${scaling.get('scaled_crypto_order_size', 9.98):.2f}** / trade |
+| **📈 Equities** | ${equity_val:.2f} | {allocations.get('equities', 0):.2f}% | {target_allocs.get('equities', 60.0):.2f}% | {drifts.get('equities', 0):+.2f}% | **${scaling.get('scaled_stock_order_size', 5.00):.2f}** / trade |
+| **🪙 Crypto** | ${crypto_val:.2f} | {allocations.get('crypto', 0):.2f}% | {target_allocs.get('crypto', 40.0):.2f}% | {drifts.get('crypto', 0):+.2f}% | **${scaling.get('scaled_crypto_order_size', 5.00):.2f}** / trade |
+| **🎯 Options** | ${options_val:.2f} | {allocations.get('options', 0):.2f}% | {opt_target_label} | {drifts.get('options', 0):+.2f}% | {opt_size_label} |
 | **💵 Cash Sweep** | ${cash_val:.2f} | {allocations.get('cash', 0):.2f}% | N/A | Cash Reserve | High-Yield APY |
 
 ---
@@ -120,7 +124,7 @@ Capital is partitioned across 3 equal quantitative buckets (**33.33% Target Benc
             icons = {"Crypto": "🪙", "Equities": "📈", "Options": "🎯"}
             for idx, act in enumerate(suggested_actions, 1):
                 b_icon = icons.get(act.get("bucket"), "📌")
-                md_content += f"#### {idx}. {b_icon} {act.get('bucket')} — `{act.get('stance')}`\n"
+                md_content += f"#### {idx}. {b_icon} {act.get('bucket')} - `{act.get('stance')}`\n"
                 md_content += f"* **Tactical Guidance**: {act.get('action')}\n"
                 md_content += f"* **Direct Execution Command**:\n```powershell\n{act.get('command')}\n```\n\n"
         else:
@@ -128,8 +132,8 @@ Capital is partitioned across 3 equal quantitative buckets (**33.33% Target Benc
             for action in rebalance_actions:
                 md_content += f"- {action}\n"
 
-        scaled_crypto = scaling.get('scaled_crypto_order_size', 10.10)
-        scaled_option = scaling.get('scaled_max_option_premium', 35.36)
+        scaled_crypto = scaling.get('scaled_crypto_order_size', 5.00)
+        scaled_stock = scaling.get('scaled_stock_order_size', 5.00)
 
         md_content += f"""---
 
@@ -151,20 +155,14 @@ Copy or choose any option below for rapid execution:
   .venv\\Scripts\\python.exe portfolio_manager.py --branch crypto --execute-live
   ```
 
-* **[B] 🎯 Scan & Review Options Strategy (Market Hours 9:30 AM EDT)**
-  * Audits high-delta ITM options setups with max risk premium cap (${scaled_option:.2f}).
-  ```powershell
-  .venv\\Scripts\\python.exe portfolio_manager.py --branch options
-  ```
-
-* **[C] 📈 Scan Equities RSI Oversold Opportunities**
-  * Evaluates SPY and NVDA watchlist indicators without breaching allocation guardrail.
+* **[B] 📈 Scan Equities RSI Oversold Opportunities**
+  * Evaluates SPY and NVDA watchlist indicators without breaching allocation guardrail (${scaled_stock:.2f} tranche).
   ```powershell
   .venv\\Scripts\\python.exe portfolio_manager.py --branch equities
   ```
 
-* **[D] 🔄 Full Portfolio Invariant Sync & Audit (Default Recommended)**
-  * Full synchronization across all 4 asset buckets and refresh of executive digest.
+* **[C] 🔄 Full Portfolio Invariant Sync & Audit (Default Recommended)**
+  * Full synchronization across all active asset buckets and refresh of executive digest.
   ```powershell
   .venv\\Scripts\\python.exe portfolio_manager.py --branch full
   ```

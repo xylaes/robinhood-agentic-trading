@@ -17,5 +17,5 @@
      1. 🚀 **Execute Simulated Order(s) Live**: Authorize live trade execution for the current top candidates (e.g., Crypto dip-buy or Equity opportunities).
      2. 🔄 **Trigger Rebalancing Action**: Deploy available uninvested cash reserves into underweight buckets.
      3. 📊 **Inspect Full Executive Digest**: View detailed breakdown in `PORTFOLIO_ANALYSIS.md`.
-     4. ⚙️ **Adjust Allocation Targets**: Reconfigure the 33/33/33 bucket benchmarks or risk tolerances.
+     4. ⚙️ **Adjust Allocation Targets**: Reconfigure bucket benchmarks (60/40 Equities/Crypto) or risk tolerances.
      5. ⏸️ **Dismiss / Keep Monitoring**: Acknowledge the briefing and resume scheduled hourly tracking.

@@ -2,16 +2,15 @@
 Automated Portfolio Risk Analysis & Rebalancing Manager Module.
 """
 import logging
-from src.config import TARGET_ALLOCATION_PCT, DRIFT_TOLERANCE_PCT, SizingEngine
+from src.config import TARGET_ALLOCATION_PCT, DRIFT_TOLERANCE_PCT, OPTIONS_MIN_NET_WORTH_THRESHOLD, SizingEngine
 
 logger = logging.getLogger("portfolio_manager.risk")
 
 class PortfolioRiskAndRebalanceManager:
     """
-    Manages Automated Portfolio Risk Analysis & Rebalancing across 3 Asset Buckets:
-    1. Equities (~33.3% Target)
-    2. Options (~33.3% Target)
-    3. Crypto (~33.3% Target)
+    Manages Automated Portfolio Risk Analysis & Rebalancing:
+    - Accounts < $500: 60% Equities / 40% Crypto (Options dormant to protect small capital)
+    - Accounts >= $500: 40% Equities / 30% Crypto / 30% Options
 
     Evaluates allocation drift (>10% threshold), cash reserve ratios, concentration risk,
     and scales position sizing dynamically.
@@ -37,17 +36,31 @@ class PortfolioRiskAndRebalanceManager:
             "cash": round((cash_val / base_val) * 100, 2)
         }
 
+        # Determine active target benchmarks based on capital tier
+        if base_val >= OPTIONS_MIN_NET_WORTH_THRESHOLD:
+            active_target_pct = {"equities": 40.00, "crypto": 30.00, "options": 30.00}
+        else:
+            active_target_pct = {
+                "equities": TARGET_ALLOCATION_PCT["equities"],
+                "crypto": TARGET_ALLOCATION_PCT["crypto"],
+                "options": TARGET_ALLOCATION_PCT["options"]
+            }
+
         # Dynamic dollar targets scaled to current account value
         target_dollars = SizingEngine.get_bucket_targets(base_val)
 
-        # Allocation drifts relative to 33.33% benchmark
+        # Allocation drifts relative to active benchmark
         drifts = {
-            "equities": round(current_pcts["equities"] - TARGET_ALLOCATION_PCT["equities"], 2),
-            "options": round(current_pcts["options"] - TARGET_ALLOCATION_PCT["options"], 2),
-            "crypto": round(current_pcts["crypto"] - TARGET_ALLOCATION_PCT["crypto"], 2)
+            "equities": round(current_pcts["equities"] - active_target_pct["equities"], 2),
+            "options": round(current_pcts["options"] - active_target_pct["options"], 2),
+            "crypto": round(current_pcts["crypto"] - active_target_pct["crypto"], 2)
         }
 
-        rebalance_required = any(abs(d) > DRIFT_TOLERANCE_PCT for d in drifts.values())
+        # Rebalance is required only if active asset classes exceed drift tolerance
+        rebalance_required = any(
+            abs(drifts[k]) > DRIFT_TOLERANCE_PCT
+            for k in ["equities", "crypto"]
+        ) or (base_val >= OPTIONS_MIN_NET_WORTH_THRESHOLD and abs(drifts["options"]) > DRIFT_TOLERANCE_PCT)
 
         # Dynamic order sizes scaled to net worth
         stock_order_size = SizingEngine.get_equity_order_size(base_val, buying_power)
@@ -58,7 +71,7 @@ class PortfolioRiskAndRebalanceManager:
         candidates = []
 
         # Candidate A: Crypto Dip Accumulation (24/7 Market)
-        if current_pcts["crypto"] < (TARGET_ALLOCATION_PCT["crypto"] - DRIFT_TOLERANCE_PCT) and buying_power >= 5.0:
+        if current_pcts["crypto"] < (active_target_pct["crypto"] - DRIFT_TOLERANCE_PCT) and buying_power >= 5.0:
             candidates.append({
                 "bucket": "Crypto",
                 "stance": "ACCUMULATE (24/7 Market Active)",
@@ -78,22 +91,22 @@ class PortfolioRiskAndRebalanceManager:
         else:
             candidates.append({
                 "bucket": "Crypto",
-                "stance": "HOLD",
-                "action": f"Maintain existing Crypto holdings (${crypto_val:.2f}, {current_pcts['crypto']:.2f}%). Allocation is within drift tolerance.",
+                "stance": "HOLD (Balanced)",
+                "action": f"Maintain existing Crypto holdings (${crypto_val:.2f}, {current_pcts['crypto']:.2f}%). Allocation is balanced within drift tolerance.",
                 "command": ".venv\\Scripts\\python.exe portfolio_manager.py --branch crypto",
                 "priority": 40
             })
 
         # Candidate B: Equities Opportunity / Risk Guardrail
-        if current_pcts["equities"] > (TARGET_ALLOCATION_PCT["equities"] + DRIFT_TOLERANCE_PCT):
+        if current_pcts["equities"] > (active_target_pct["equities"] + DRIFT_TOLERANCE_PCT):
             candidates.append({
                 "bucket": "Equities",
                 "stance": "HOLD (Overweight Guardrail Active)",
-                "action": f"Hold existing equity positions ($92.70, {current_pcts['equities']:.2f}%). Over target by +{drifts['equities']:.2f}%; guardrail safely prevents over-concentration.",
+                "action": f"Hold existing equity positions (${equity_val:.2f}, {current_pcts['equities']:.2f}%). Over target by +{drifts['equities']:.2f}%; guardrail safely prevents over-concentration.",
                 "command": ".venv\\Scripts\\python.exe portfolio_manager.py --branch equities",
                 "priority": 90
             })
-        elif buying_power >= 5.0 and current_pcts["equities"] < (TARGET_ALLOCATION_PCT["equities"] - DRIFT_TOLERANCE_PCT):
+        elif buying_power >= 5.0 and current_pcts["equities"] < (active_target_pct["equities"] - DRIFT_TOLERANCE_PCT):
             candidates.append({
                 "bucket": "Equities",
                 "stance": "ACCUMULATE ON DIP",
@@ -104,14 +117,22 @@ class PortfolioRiskAndRebalanceManager:
         else:
             candidates.append({
                 "bucket": "Equities",
-                "stance": "HOLD",
-                "action": f"Maintain current equity holdings (${equity_val:.2f}, {current_pcts['equities']:.2f}%). Capital is prioritized for rebalancing under-allocated buckets.",
+                "stance": "HOLD (Balanced)",
+                "action": f"Maintain current equity holdings (${equity_val:.2f}, {current_pcts['equities']:.2f}%). Allocation is balanced within drift tolerance.",
                 "command": ".venv\\Scripts\\python.exe portfolio_manager.py --branch equities",
                 "priority": 50
             })
 
-        # Candidate C: Options Defined-Risk Strategy
-        if current_pcts["options"] < (TARGET_ALLOCATION_PCT["options"] - DRIFT_TOLERANCE_PCT) and buying_power >= 15.0:
+        # Candidate C: Options Defined-Risk Strategy (Active only if Net Worth >= $500)
+        if base_val < OPTIONS_MIN_NET_WORTH_THRESHOLD:
+            candidates.append({
+                "bucket": "Options",
+                "stance": "DORMANT (Capital Protected)",
+                "action": f"Options bucket dormant while account net worth (${base_val:.2f}) is below ${OPTIONS_MIN_NET_WORTH_THRESHOLD:.0f} threshold to avoid non-fractional contract risk and theta decay.",
+                "command": ".venv\\Scripts\\python.exe portfolio_manager.py --branch full",
+                "priority": 25
+            })
+        elif current_pcts["options"] < (active_target_pct["options"] - DRIFT_TOLERANCE_PCT) and buying_power >= 25.0:
             candidates.append({
                 "bucket": "Options",
                 "stance": "QUEUE / SCAN (Market Hours 9:30 AM EDT)",
@@ -125,7 +146,7 @@ class PortfolioRiskAndRebalanceManager:
                 "stance": "HOLD / PRESERVE CASH",
                 "action": f"Preserve uninvested cash in Robinhood sweep earning high-yield APY interest while monitoring for high-probability setups.",
                 "command": ".venv\\Scripts\\python.exe portfolio_manager.py --branch options",
-                "priority": 45
+                "priority": 30
             })
 
         # Candidate D: Cash Sweep APY Reserve
@@ -152,7 +173,7 @@ class PortfolioRiskAndRebalanceManager:
             "total_value": total_val,
             "buying_power": buying_power,
             "current_allocations_pct": current_pcts,
-            "target_allocation_pct": TARGET_ALLOCATION_PCT,
+            "target_allocation_pct": active_target_pct,
             "target_dollar_allocations": target_dollars,
             "allocation_drifts_pct": drifts,
             "drift_tolerance_pct": DRIFT_TOLERANCE_PCT,

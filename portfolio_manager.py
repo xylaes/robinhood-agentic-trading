@@ -16,7 +16,7 @@ except ImportError:
     pass
 
 # Import modular components from src package
-from src.config import EQUITY_WATCHLIST, CRYPTO_WATCHLIST, SizingEngine
+from src.config import EQUITY_WATCHLIST, CRYPTO_WATCHLIST, TARGET_ALLOCATION_PCT, OPTIONS_MIN_NET_WORTH_THRESHOLD, SizingEngine
 from src.ssot import GitHubSourceOfTruth
 from src.macro_hedging import EventContractManager
 from src.risk_manager import PortfolioRiskAndRebalanceManager
@@ -270,9 +270,24 @@ async def run_portfolio_cycle(target_branch: str = "full", execute_live: bool = 
                     results["crypto_quotes"] = crypto_quotes
                     results["crypto_holdings"] = crypto_holdings
 
-                    # Select active crypto opportunity (e.g. BTC, ETH, SOL, or DOGE)
+                    # Select active crypto opportunity by lowest intraday % change (dip-buy)
                     if CRYPTO_WATCHLIST:
                         best_crypto_symbol = CRYPTO_WATCHLIST[0]
+                        watchlist_map = {s.replace("-", ""): s for s in CRYPTO_WATCHLIST}
+                        crypto_scores = {}
+                        for q in crypto_quotes.get("mcp_quotes", []):
+                            q_sym = q.get("symbol", "")
+                            mapped_sym = watchlist_map.get(q_sym)
+                            try:
+                                mark_p = float(q.get("mark_price", 0) or 0)
+                                open_p = float(q.get("open_price", 0) or 0)
+                                if mapped_sym and mark_p > 0 and open_p > 0:
+                                    crypto_scores[mapped_sym] = ((mark_p - open_p) / open_p) * 100.0
+                            except (TypeError, ValueError):
+                                pass
+                        if crypto_scores:
+                            best_crypto_symbol = min(crypto_scores, key=crypto_scores.get)
+                            logger.info(f"Top Crypto Opportunity Candidate: {best_crypto_symbol} (24h Change: {crypto_scores[best_crypto_symbol]:+.2f}%)")
 
                 # 4. Evaluate Event Contracts & Macro Hedges
                 if target_branch in ["full", "events"]:
@@ -286,139 +301,126 @@ async def run_portfolio_cycle(target_branch: str = "full", execute_live: bool = 
                 # --- Equities Execution ---
                 if target_branch in ["full", "equities"]:
                     try:
-                        logger.info(f"Auditing Equity Market Buy for {best_equity_symbol} (${stock_order_size:.2f})...")
-                        eq_sim = await session.call_tool("review_equity_order", arguments={
-                            "account_number": account_num,
-                            "symbol": best_equity_symbol,
-                            "side": "buy",
-                            "type": "market",
-                            "dollar_amount": f"{stock_order_size:.2f}"
-                        })
-                        eq_sim_data = json.loads(eq_sim.content[0].text)
-                        results["simulations"]["equity_review"] = eq_sim_data
-
                         # Check Bucket Allocation & Concentration Guardrails
-                        equity_target_val = (equity_val * 0.3333) if equity_val > 0 else 50.00
+                        target_pct = TARGET_ALLOCATION_PCT["equities"] if equity_val < OPTIONS_MIN_NET_WORTH_THRESHOLD else 40.00
+                        equity_target_val = (equity_val * (target_pct / 100.0)) if equity_val > 0 else 50.00
+                        equities_bucket_val = float(p_info.get("equity_value", 0) or 0)
                         held_symbols = [p.get("symbol") for p in pos_data.get("data", {}).get("positions", [])]
-                        
-                        if equity_val > 0 and (equity_val - buying_power) >= equity_target_val:
-                            logger.info(f"🛡️ Guardrail: Equity allocation already at/exceeding 33.33% target (${equity_target_val:.2f}). Skipping equity buy to avoid over-allocation.")
+
+                        if equity_val > 0 and equities_bucket_val >= equity_target_val:
+                            logger.info(f"🛡️ Guardrail: Equities bucket (${equities_bucket_val:.2f}) already at/exceeding {target_pct:.1f}% target (${equity_target_val:.2f}). Skipping equity buy to avoid over-allocation.")
                         elif best_equity_symbol in held_symbols and len(held_symbols) >= 3:
                             logger.info(f"🛡️ Guardrail: {best_equity_symbol} is already held in portfolio. Skipping duplicate stacking buy.")
-                        elif execute_live and buying_power >= stock_order_size:
-                            logger.info(f"🚀 Placing LIVE Equity Order: {best_equity_symbol} (${stock_order_size:.2f})...")
-                            place_res = await session.call_tool("place_equity_order", arguments={
+                        elif buying_power < stock_order_size:
+                            logger.info(f"🛡️ Guardrail: Insufficient buying power (${buying_power:.2f} < ${stock_order_size:.2f}). Skipping equity review/order for {best_equity_symbol}.")
+                        else:
+                            logger.info(f"Auditing Equity Market Buy for {best_equity_symbol} (${stock_order_size:.2f})...")
+                            eq_sim = await session.call_tool("review_equity_order", arguments={
                                 "account_number": account_num,
                                 "symbol": best_equity_symbol,
                                 "side": "buy",
                                 "type": "market",
-                                "dollar_amount": f"{stock_order_size:.2f}",
-                                "time_in_force": "gfd"
+                                "dollar_amount": f"{stock_order_size:.2f}"
                             })
-                            place_data = json.loads(place_res.content[0].text)
-                            logger.info(f"✓ Equity Order Placed: {json.dumps(place_data)}")
-                            send_desktop_notification(
-                                "🤖 Robinhood Agentic Trader",
-                                f"Live Equity Buy Submitted: {best_equity_symbol} (${stock_order_size:.2f})"
-                            )
-                            results["executed_trades"].append({
-                                "asset_class": "equity",
-                                "symbol": best_equity_symbol,
-                                "side": "buy",
-                                "dollar_amount": stock_order_size,
-                                "status": "SUBMITTED",
-                                "details": place_data
-                            })
-                        else:
-                            logger.info(f"🛡️ Simulation audit completed for {best_equity_symbol}. Execution requires explicit authorization (--execute-live).")
+                            eq_sim_data = json.loads(eq_sim.content[0].text)
+                            results["simulations"]["equity_review"] = eq_sim_data
+
+                            if execute_live:
+                                logger.info(f"🚀 Placing LIVE Equity Order: {best_equity_symbol} (${stock_order_size:.2f})...")
+                                place_res = await session.call_tool("place_equity_order", arguments={
+                                    "account_number": account_num,
+                                    "symbol": best_equity_symbol,
+                                    "side": "buy",
+                                    "type": "market",
+                                    "dollar_amount": f"{stock_order_size:.2f}",
+                                    "time_in_force": "gfd"
+                                })
+                                place_data = json.loads(place_res.content[0].text)
+                                logger.info(f"✓ Equity Order Placed: {json.dumps(place_data)}")
+                                send_desktop_notification(
+                                    "🤖 Robinhood Agentic Trader",
+                                    f"Live Equity Buy Submitted: {best_equity_symbol} (${stock_order_size:.2f})"
+                                )
+                                results["executed_trades"].append({
+                                    "asset_class": "equity",
+                                    "symbol": best_equity_symbol,
+                                    "side": "buy",
+                                    "dollar_amount": stock_order_size,
+                                    "status": "SUBMITTED",
+                                    "details": place_data
+                                })
+                            else:
+                                logger.info(f"🛡️ Simulation audit completed for {best_equity_symbol}. Execution requires explicit authorization (--execute-live).")
                     except Exception as e:
                         logger.warning(f"Equity execution notice: {e}")
 
-                # --- Options Simulation ---
+                # --- Options Strategy (Dormant for sub-$500 accounts) ---
                 if target_branch in ["full", "options"]:
-                    try:
-                        opt_sim = await session.call_tool("review_option_order", arguments={
-                            "account_number": account_num,
-                            "chain_symbol": "F",
-                            "underlying_type": "equity",
-                            "type": "limit",
-                            "quantity": "1",
-                            "price": "0.35",
-                            "legs": [
-                                {
-                                    "option_id": "150a3cae-bed2-406b-8d0b-27714de083ca",
-                                    "side": "buy",
-                                    "position_effect": "open",
-                                    "ratio_quantity": 1
-                                }
-                            ]
-                        })
-                        results["simulations"]["option_review"] = json.loads(opt_sim.content[0].text)
-                    except Exception as e:
-                        logger.warning(f"Option simulation notice: {e}")
+                    if equity_val < OPTIONS_MIN_NET_WORTH_THRESHOLD:
+                        logger.info(f"Options strategy dormant for accounts below ${OPTIONS_MIN_NET_WORTH_THRESHOLD:.0f} threshold to protect against non-fractional contract risk.")
+                    else:
+                        try:
+                            opt_sim = await session.call_tool("review_option_order", arguments={
+                                "account_number": account_num,
+                                "chain_symbol": "F",
+                                "underlying_type": "equity",
+                                "type": "limit",
+                                "quantity": "1",
+                                "price": "0.35",
+                                "legs": [
+                                    {
+                                        "option_id": "150a3cae-bed2-406b-8d0b-27714de083ca",
+                                        "side": "buy",
+                                        "position_effect": "open",
+                                        "ratio_quantity": 1
+                                    }
+                                ]
+                            })
+                            results["simulations"]["option_review"] = json.loads(opt_sim.content[0].text)
+                        except Exception as e:
+                            logger.warning(f"Option simulation notice: {e}")
 
                 # --- Crypto Execution (Dual Engine: Native MCP with REST Fallback) ---
                 if target_branch in ["full", "crypto"]:
-                    is_dry_run = not execute_live
-                    logger.info(f"Evaluating Crypto Order for {best_crypto_symbol} (${crypto_order_size:.2f}, DryRun: {is_dry_run})...")
-                    mcp_order_success = False
+                    if buying_power < crypto_order_size:
+                        logger.info(f"🛡️ Guardrail: Insufficient buying power (${buying_power:.2f} < ${crypto_order_size:.2f}). Skipping crypto preview/order for {best_crypto_symbol}.")
+                    else:
+                        is_dry_run = not execute_live
+                        logger.info(f"Evaluating Crypto Order for {best_crypto_symbol} (${crypto_order_size:.2f}, DryRun: {is_dry_run})...")
+                        mcp_order_success = False
 
-                    # 1. Attempt Native MCP Preview & Placement
-                    try:
-                        ref_uuid = str(uuid.uuid4())
-                        preview_res = await session.call_tool("preview_crypto_order", arguments={
-                            "rhs_account_number": rhs_account_num,
-                            "symbol": best_crypto_symbol,
-                            "side": "buy",
-                            "type": "market",
-                            "dollar_amount": f"{crypto_order_size:.2f}"
-                        })
-                        preview_data = json.loads(preview_res.content[0].text)
-                        results["simulations"]["crypto_review"] = preview_data
-                        logger.info(f"✓ Crypto Order Preview Successful via MCP (Account: ...{rhs_account_num[-4:]}, Notional: ${crypto_order_size:.2f})")
-
-                        if execute_live and not is_dry_run:
-                            logger.info(f"Placing Live Crypto Order for {best_crypto_symbol} (${crypto_order_size:.2f}) via MCP...")
-                            order_res = await session.call_tool("place_crypto_order", arguments={
+                        # 1. Attempt Native MCP Preview & Placement
+                        try:
+                            ref_uuid = str(uuid.uuid4())
+                            preview_res = await session.call_tool("preview_crypto_order", arguments={
                                 "rhs_account_number": rhs_account_num,
                                 "symbol": best_crypto_symbol,
                                 "side": "buy",
                                 "type": "market",
-                                "dollar_amount": f"{crypto_order_size:.2f}",
-                                "ref_id": ref_uuid
+                                "dollar_amount": f"{crypto_order_size:.2f}"
                             })
-                            order_data = json.loads(order_res.content[0].text)
-                            logger.info(f"✓ Crypto Order Placed via MCP: {order_data}")
-                            send_desktop_notification(
-                                "🪙 Robinhood Crypto Trader",
-                                f"Live Crypto Buy Executed: {best_crypto_symbol} (${crypto_order_size:.2f})"
-                            )
-                            results["executed_trades"].append({
-                                "asset_class": "crypto",
-                                "symbol": best_crypto_symbol,
-                                "side": "buy",
-                                "dollar_amount": crypto_order_size,
-                                "status": "SUBMITTED",
-                                "details": order_data
-                            })
-                        mcp_order_success = True
-                    except Exception as e:
-                        logger.warning(f"MCP crypto execution notice: {e}. Falling back to direct REST client...")
+                            raw_preview = preview_res.content[0].text.strip() if preview_res.content else ""
+                            if not raw_preview:
+                                raise ValueError("Empty response from preview_crypto_order")
+                            try:
+                                preview_data = json.loads(raw_preview)
+                            except json.JSONDecodeError as je:
+                                raise ValueError(f"Non-JSON response from preview_crypto_order: {raw_preview[:120]}") from je
+                            results["simulations"]["crypto_review"] = preview_data
+                            logger.info(f"✓ Crypto Order Preview Successful via MCP (Account: ...{rhs_account_num[-4:]}, Notional: ${crypto_order_size:.2f})")
 
-                    # 2. Fallback to Direct REST API Client if MCP did not complete
-                    if not mcp_order_success:
-                        try:
-                            crypto_client = RobinhoodCryptoClient()
-                            crypto_res = crypto_client.place_order(
-                                symbol=best_crypto_symbol,
-                                side="buy",
-                                order_type="market",
-                                dollar_amount=crypto_order_size,
-                                dry_run=is_dry_run
-                            )
-                            results["simulations"]["crypto_review"] = crypto_res
-                            if execute_live and not is_dry_run and crypto_res and "id" in crypto_res:
-                                logger.info(f"✓ Crypto Order Placed via Direct REST: {json.dumps(crypto_res)}")
+                            if execute_live and not is_dry_run:
+                                logger.info(f"Placing Live Crypto Order for {best_crypto_symbol} (${crypto_order_size:.2f}) via MCP...")
+                                order_res = await session.call_tool("place_crypto_order", arguments={
+                                    "rhs_account_number": rhs_account_num,
+                                    "symbol": best_crypto_symbol,
+                                    "side": "buy",
+                                    "type": "market",
+                                    "dollar_amount": f"{crypto_order_size:.2f}",
+                                    "ref_id": ref_uuid
+                                })
+                                order_data = json.loads(order_res.content[0].text)
+                                logger.info(f"✓ Crypto Order Placed via MCP: {order_data}")
                                 send_desktop_notification(
                                     "🪙 Robinhood Crypto Trader",
                                     f"Live Crypto Buy Executed: {best_crypto_symbol} (${crypto_order_size:.2f})"
@@ -428,11 +430,41 @@ async def run_portfolio_cycle(target_branch: str = "full", execute_live: bool = 
                                     "symbol": best_crypto_symbol,
                                     "side": "buy",
                                     "dollar_amount": crypto_order_size,
-                                    "status": "FILLED",
-                                    "details": crypto_res
+                                    "status": "SUBMITTED",
+                                    "details": order_data
                                 })
-                        except Exception as fb_err:
-                            logger.error(f"Direct crypto client fallback error: {fb_err}")
+                            mcp_order_success = True
+                        except Exception as e:
+                            logger.warning(f"MCP crypto execution notice: {e}. Falling back to direct REST client...")
+
+                        # 2. Fallback to Direct REST API Client if MCP did not complete
+                        if not mcp_order_success:
+                            try:
+                                crypto_client = RobinhoodCryptoClient()
+                                crypto_res = crypto_client.place_order(
+                                    symbol=best_crypto_symbol,
+                                    side="buy",
+                                    order_type="market",
+                                    dollar_amount=crypto_order_size,
+                                    dry_run=is_dry_run
+                                )
+                                results["simulations"]["crypto_review"] = crypto_res
+                                if execute_live and not is_dry_run and crypto_res and "id" in crypto_res:
+                                    logger.info(f"✓ Crypto Order Placed via Direct REST: {json.dumps(crypto_res)}")
+                                    send_desktop_notification(
+                                        "🪙 Robinhood Crypto Trader",
+                                        f"Live Crypto Buy Executed: {best_crypto_symbol} (${crypto_order_size:.2f})"
+                                    )
+                                    results["executed_trades"].append({
+                                        "asset_class": "crypto",
+                                        "symbol": best_crypto_symbol,
+                                        "side": "buy",
+                                        "dollar_amount": crypto_order_size,
+                                        "status": "FILLED",
+                                        "details": crypto_res
+                                    })
+                            except Exception as fb_err:
+                                logger.error(f"Direct crypto client fallback error: {fb_err}")
 
                 # 6. Automated Risk Exposure Analysis & Rebalancing
                 logger.info("Step 6: Running Automated Risk Exposure & Rebalancing Analysis...")

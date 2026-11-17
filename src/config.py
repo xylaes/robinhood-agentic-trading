@@ -2,11 +2,15 @@
 Centralized Configuration & Dynamic Capital Sizing Engine for Robinhood Agentic Trading.
 """
 
+# Capital Thresholds & Benchmarks
+OPTIONS_MIN_NET_WORTH_THRESHOLD = 500.00  # Minimum capital to trade non-fractional 100-share options
+
 # Account Target Allocation Benchmarks (%)
+# Tailored for small accounts: 60% Equities / 40% Crypto with 0% Options (<$500)
 TARGET_ALLOCATION_PCT = {
-    "equities": 33.33,
-    "options": 33.33,
-    "crypto": 33.33
+    "equities": 60.00,
+    "crypto": 40.00,
+    "options": 0.00
 }
 
 # Risk Boundaries & Tolerances
@@ -33,39 +37,51 @@ class SizingEngine:
     def get_bucket_targets(net_worth: float) -> dict:
         """
         Calculates target dollar allocations for each bucket based on net worth.
+        Options bucket remains dormant ($0) until net worth reaches OPTIONS_MIN_NET_WORTH_THRESHOLD ($500).
         """
         base_val = net_worth if net_worth > 0 else 150.0
+        if base_val >= OPTIONS_MIN_NET_WORTH_THRESHOLD:
+            return {
+                "equities": round(base_val * 0.40, 2),
+                "crypto": round(base_val * 0.30, 2),
+                "options": round(base_val * 0.30, 2)
+            }
         return {
-            "equities": round(base_val * 0.3333, 2),
-            "options": round(base_val * 0.3333, 2),
-            "crypto": round(base_val * 0.3333, 2)
+            "equities": round(base_val * (TARGET_ALLOCATION_PCT["equities"] / 100.0), 2),
+            "crypto": round(base_val * (TARGET_ALLOCATION_PCT["crypto"] / 100.0), 2),
+            "options": 0.00
         }
 
     @staticmethod
     def get_equity_order_size(net_worth: float, buying_power: float) -> float:
         """
-        Calculates dynamic fractional stock order size (20% of equity bucket target).
+        Calculates dynamic fractional stock order size (10% of equity bucket target).
         """
-        bucket_target = net_worth * 0.3333
-        calculated_size = round(bucket_target * 0.20, 2)
-        return max(5.00, min(calculated_size, buying_power))
+        targets = SizingEngine.get_bucket_targets(net_worth)
+        bucket_target = targets.get("equities", net_worth * 0.60)
+        calculated_size = round(bucket_target * 0.10, 2)
+        return max(5.00, min(calculated_size, buying_power if buying_power >= 5.0 else 5.00))
 
     @staticmethod
     def get_crypto_order_size(net_worth: float, buying_power: float) -> float:
         """
-        Calculates dynamic fractional crypto order size (20% of crypto bucket target).
+        Calculates dynamic fractional crypto order size (10% of crypto bucket target).
         """
-        bucket_target = net_worth * 0.3333
-        calculated_size = round(bucket_target * 0.20, 2)
-        return max(5.00, min(calculated_size, buying_power))
+        targets = SizingEngine.get_bucket_targets(net_worth)
+        bucket_target = targets.get("crypto", net_worth * 0.40)
+        calculated_size = round(bucket_target * 0.10, 2)
+        return max(5.00, min(calculated_size, buying_power if buying_power >= 5.0 else 5.00))
 
     @staticmethod
     def get_max_option_premium(net_worth: float) -> float:
         """
-        Calculates dynamic max option contract premium cap (70% of option bucket target).
+        Calculates dynamic max option contract premium cap.
+        Dormant ($0.00) while net worth is under $500 threshold.
         """
-        bucket_target = net_worth * 0.3333
-        return max(15.00, round(bucket_target * 0.70, 2))
+        if net_worth < OPTIONS_MIN_NET_WORTH_THRESHOLD:
+            return 0.00
+        bucket_target = net_worth * 0.30
+        return max(25.00, round(bucket_target * 0.50, 2))
 
     @staticmethod
     def get_macro_hedge_budget(net_worth: float) -> float:
